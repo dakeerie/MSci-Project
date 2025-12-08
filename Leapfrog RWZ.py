@@ -31,6 +31,13 @@ def Vpm(r, M, l, parity):
         raise ValueError("parity needs to be either: axial or polar")
     return V
 
+def FD_xderivative(Psi, dx):
+    dPsi = np.zeros_like(Psi)
+    dPsi[1:-1] = (Psi[2:] - Psi[:-2])/(2*dx)
+    dPsi[0] = (Psi[1] - Psi[0])/dx
+    dPsi[-1] = (Psi[-1] - Psi[-2])/dx
+    return dPsi
+
 #Leapfrog solver
 #Parameters
 M = 1
@@ -40,21 +47,32 @@ l = 2
 #Define grid
 dx = 0.1
 dt = 0.5*dx
-rstar = np.arange(-200*M, (300+dx)*M, dx)
+rstar = np.arange(-400*M, (700+dx)*M, dx)
 r = rstar_to_r(rstar, M)
 Nr = len(rstar) #spatial points
-Nt = 4000 #timesteps
+Nt = 8000 #timesteps
 print(Nr, Nt)
 
 #Initial data
-width = 5*M
-rstar0 = 100*M
-omega = 2
-Psi0 = 1/(np.sqrt(2*np.pi*width**2))*np.exp(-(rstar - rstar0)**2/(2*width**2))*np.cos(-omega*rstar)
+width = 10*M
+rstar0 = 110*M
+omega = 0.5
+Psi0 = 1/(np.sqrt(2*np.pi*width**2))*np.exp(-(rstar - rstar0)**2/(2*width**2))*np.exp(-j*omega*rstar)
+dPsi0 = (-j*omega - (rstar - rstar0)/width**2)*Psi0
+
+
+# plt.figure()
+# # plt.plot(rstar, dPsi0, label = 'Analytical')
+# # plt.plot(rstar, FD_xderivative(Psi0, dx), label = 'Finite Difference')
+# plt.plot(rstar, np.abs(dPsi0 - FD_xderivative(Psi0, dx)), label = 'Difference' )
+# plt.legend()
+# plt.grid()
+# plt.show()
+
 
 #Solver function
 def leapfrog(rstar: np.ndarray, tsteps: int, mass: float, mode: int, parity: str, 
-            y0: np.ndarray, dx: float, dt: float):
+            y0: np.ndarray, dydt0: np.ndarray, dx: float, dt: float):
     
     if dt > dx:
         raise ValueError("CFL condition, dt <= dx must hold for stable solver")
@@ -63,7 +81,8 @@ def leapfrog(rstar: np.ndarray, tsteps: int, mass: float, mode: int, parity: str
 
     psi_arr = np.zeros((len(rstar), tsteps), dtype = y0.dtype)
     psi_arr[:, 0] = y0
-    psi_arr[1:-1, 1] = psi_arr[1:-1, 0] + 0.5*(dt/dx)**2*(psi_arr[2:, 0] + 
+    psi_arr[1:-1, 1] = psi_arr[1:-1, 0] + dt*dydt0[1:-1]
+    0.5*(dt/dx)**2*(psi_arr[2:, 0] + 
         psi_arr[:-2, 0] - 2*psi_arr[1:-1, 0]) - 0.5*V[1:-1]*psi_arr[1:-1, 0]*dt**2
     
     for q in range(1, tsteps - 1):
@@ -77,7 +96,8 @@ def leapfrog(rstar: np.ndarray, tsteps: int, mass: float, mode: int, parity: str
     return psi_arr
 
 #Solve
-Psi = leapfrog(rstar, Nt, M, l, 'axial', Psi0, dx, dt)
+#Take dPsi/dr = dPsi/dt at t = 0 (ingoing advection equation)
+Psi = leapfrog(rstar, Nt, M, l, 'axial', Psi0, dPsi0, dx, dt)
 Psi = Psi.transpose()
 r = rstar_to_r(rstar, M)
 V_axial = Vpm(r, M, 2, 'axial')
@@ -102,7 +122,7 @@ times = np.linspace(0, Nt, Nt)
 print(times.shape, extraction.shape)
 
 plt.figure()
-plt.plot(times, extraction, '.-', label = r'Time series at $r = 100 M$')
+plt.plot(times, extraction, '.-', label = r'Time series at $r = 200 M$')
 # plt.plot(rstar, Psi[2000,:], label = r'Spatial pulse at $t = 2000$')
 plt.xlabel('Time', fontsize = 20)
 plt.ylabel(r'$\Psi$', fontsize = 20)
