@@ -80,8 +80,7 @@ class SchwarzschildPerturbation:
         psi_arr[:, 0] = Psi0
         lap = (Psi0[2:] - 2*Psi0[1:-1, 0] + Psi0[:-2]) / self.dx**2
         
-        psi_arr[1:-1, 1] = (psi_arr[1:-1, 0] + 
-                            self.dt*dPsi0[1:-1]
+        psi_arr[1:-1, 1] = (psi_arr[1:-1, 0] + self.dt*dPsi0[1:-1] 
                             + 0.5*self.dt**2*(lap - self.V[1:-1]*Psi0[1:-1]))
         
 
@@ -90,8 +89,8 @@ class SchwarzschildPerturbation:
                 + (self.dt / self.dx)**2*(psi_arr[2:, q] + psi_arr[:-2, q] - 2*psi_arr[1:-1, q])
                 - self.V[1:-1]*psi_arr[1:-1, q]*self.dt**2)
             
-            psi_arr[0, q + 1] = (1 - self.dt/self.dx)*psi_arr[0, q] + self.dt/self.dx*psi_arr[1, q]
-            psi_arr[-1, q + 1] = (1 - self.dt/self.dx)*psi_arr[-1, q] + self.dt/self.dx*psi_arr[-2, q]
+            psi_arr[0, q + 1] = psi_arr[0, q] - self.dt/self.dx*(psi_arr[1, q] - psi_arr[0, q])
+            psi_arr[-1, q + 1] = (1 + self.dt/self.dx)*psi_arr[-1, q] - self.dt/self.dx*psi_arr[-2, q]
 
         self.Psi = psi_arr.T
         return self
