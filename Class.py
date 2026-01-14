@@ -13,10 +13,10 @@ class SchwarzschildPerturbation:
     the RZW equation using a Leapfrog solver.
     """
 
-    def __init__(self, M=1.0, l=2, parity='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
+    def __init__(self, M=1.0, l=2, potential='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
         self.M = M
         self.l = l
-        self.parity = parity
+        self.potential = potential
         self.dx = dx
         self.dt = dt if dt is not None else 0.5*dx
 
@@ -42,10 +42,10 @@ class SchwarzschildPerturbation:
         return r + 2*self.M*np.log(r/(2*self.M) - 1)
     
     def _compute_potential(self):
-        if self.parity == 'axial':
+        if self.potential == 'axial':
             return (1 - 2*self.M/self.r)*(self.l*(self.l + 1)/self.r**2 - 6*self.M/self.r**3)
-        elif self.parity == 'polar':
-            n = 0.5 * (self.l - 1)*(self.l + 2)
+        elif self.potential == 'polar':
+            n = 0.5*(self.l - 1)*(self.l + 2)
             num = 2*(1 - 2*self.M/self.r)*(
                 9*self.M**3 +
                 9*n*self.M**2*self.r + 
@@ -54,8 +54,10 @@ class SchwarzschildPerturbation:
             )
             den = self.r**3*(3*self.M + n*self.r)**2
             return num / den
+        elif self.potential == 'zero':
+            return np.zeros_like(self.r)
         else:
-            raise ValueError("Parity must be either 'axial' or 'polar'")
+            raise ValueError("Potential argument must be either 'axial', 'polar' or 'zero'.")
         
     def _FD_x_derivative(self, Psi):
         dPsi = np.zeros_like(Psi)
@@ -73,12 +75,12 @@ class SchwarzschildPerturbation:
         self.Nt = Nt
         self.times = np.arange(Nt)*self.dt
 
-        if dPsi0 == None:
+        if dPsi0 is None:
             dPsi0 = self._FD_x_derivative(Psi0)
 
         psi_arr = np.zeros((len(self.rstar), Nt), dtype=complex)
         psi_arr[:, 0] = Psi0
-        lap = (Psi0[2:] - 2*Psi0[1:-1, 0] + Psi0[:-2]) / self.dx**2
+        lap = (Psi0[2:] - 2*Psi0[1:-1] + Psi0[:-2]) / self.dx**2
         
         psi_arr[1:-1, 1] = (psi_arr[1:-1, 0] + self.dt*dPsi0[1:-1] 
                             + 0.5*self.dt**2*(lap - self.V[1:-1]*Psi0[1:-1]))
@@ -157,7 +159,7 @@ class SchwarzschildPerturbation:
         for i, t_idx in enumerate(frame_indices):
             fig, ax = plt.subplots(figsize=(8, 5))
             
-            ax.plot(self.rstar, wave_data[t_idx, :], label=f'$\\Psi$ ({component})', linewidth = 2)
+            ax.plot(self.rstar, wave_data[t_idx, :], label=f'$\\Psi$ ({component})')
             
             if show_potential:
                 ax.plot(self.rstar, self.V,
@@ -223,16 +225,19 @@ class SchwarzschildPerturbation:
 def gaussian_initial_profile(rstar, rstar0, width, omega):
     return (1 / np.sqrt(2*np.pi*width**2)*np.exp(-(rstar - rstar0)**2/(2*width**2))*np.exp(-1j*omega*rstar))
 
-# if __name__ == "__main__":
-#     # Example 1: Axial l=2
-#     omega_val = 0.5
-#     sim_axial = SchwarzschildPerturbation(M=1.0, l=2, parity='axial', rstar_min = -400, rstar_max = 700, dx = 0.1)
-#     Psi0 = gaussian_initial_profile(sim_axial.rstar, rstar0 = 100*sim_axial.M, width = 10*sim_axial.M, omega = omega_val)
+if __name__ == "__main__":
+    # Example 1: Axial l=2
+    axial_sim = SchwarzschildPerturbation(M=1.0, l=2, parity='axial', rstar_min = -400, rstar_max = 700, dx = 0.1)
+    width = 10*axial_sim.M
+    rstar0 = 110*axial_sim.M
+    omega = 0.5
+    Psi0 = 1/(np.sqrt(2*np.pi*width**2))*np.exp(-(axial_sim.rstar - rstar0)**2/(2*width**2))*np.exp(-j*omega*axial_sim.rstar)
+    dPsi0 = (-j*omega - (axial_sim.rstar - rstar0)/width**2)*Psi0
     
-#     sim_axial.solve(Psi0, Nt = 8000)
+    axial_sim.solve(Psi0, Nt = 8000, dPsi0 = dPsi0)
     
-#     # This will now auto-create "SS_Perturbation_gifs/BH_M1.0_l2_axial_w0.50_real.gif"
-#     sim_axial.make_gif(component='real', frame_interval = 100, omega = omega_val)
+    # This will now auto-create "SS_Perturbation_gifs/BH_M1.0_l2_axial_w0.50_real.gif"
+    axial_sim.make_gif(component='real', frame_interval = 100, omega = omega)
 
 #     # Example 2: Polar l=3
 #     sim_polar = SchwarzschildPerturbation(M = 1.0, l = 3, parity = 'polar', rstar_min = -400, rstar_max = 700, dx = 0.1)
