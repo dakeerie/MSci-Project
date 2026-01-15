@@ -124,7 +124,7 @@ class SchwarzschildPerturbation:
         if filename is None:
             omega_str = f"_w{omega:.2f}" if omega is not None else ""
             # Naming convention: Mass, Mode, Parity
-            name_str = f"BH_M{self.M:.1f}_l{self.l}_{self.parity}{omega_str}_{component}.gif"
+            name_str = f"BH_M{self.M:.1f}_l{self.l}_{self.potential}{omega_str}_{component}.gif"
             output_path = output_dir / name_str
         else:
 
@@ -152,7 +152,7 @@ class SchwarzschildPerturbation:
 
         if fig_title is None:
             omega_display = f", $\\omega={omega:.2f}$" if omega is not None else ""
-            fig_title = f"{self.parity.capitalize()} Perturbation: $M={self.M}$, $l={self.l}${omega_display}"
+            fig_title = f"{self.potential.capitalize()} Perturbation: $M={self.M}$, $l={self.l}${omega_display}"
         
         print(f"Generating frames for {output_path.name}...")
         
@@ -211,7 +211,7 @@ class SchwarzschildPerturbation:
         
         if show_potential:
             plt.plot(self.rstar, self.V,
-                    label=rf'{self.parity.capitalize()} potential')
+                    label=rf'{self.potential.capitalize()} potential')
         
         plt.xlabel(r'$r_*$', fontsize = 16)
         plt.ylabel(r'$\Psi$', fontsize = 16)
@@ -227,7 +227,7 @@ def gaussian_initial_profile(rstar, rstar0, width, omega):
 
 if __name__ == "__main__":
     # Example 1: Axial l=2
-    axial_sim = SchwarzschildPerturbation(M=1.0, l=2, parity='axial', rstar_min = -400, rstar_max = 700, dx = 0.1)
+    axial_sim = SchwarzschildPerturbation(M=1.0, l=2, potential='axial', rstar_min = -400, rstar_max = 700, dx = 0.1)
     width = 10*axial_sim.M
     rstar0 = 110*axial_sim.M
     omega = 0.5
