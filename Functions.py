@@ -37,15 +37,27 @@ def Vpm(r, M, l, parity):
         raise ValueError("parity needs to be either: axial or polar")
     return V
 
-def Vpm_peak_r(M, l: int, parity):
-    if parity == 'axial':
-        coeffs = np.array([l*(l + 1), -3/2*(6*M + 2*M*l*(l + 1)), 24*M**2 ])
-        peak = np.max(np.roots(coeffs))
-    elif parity == 'polar':
-        res = minimize_scalar(lambda r: -Vpm(r, M, l, "polar"), bounds=(2.1*M, 5*M), method='bounded')
-        peak = res.x
-    else:
+def Vpm_peak(M, l: int, parity, coord):
+
+    if parity not in ('axial', 'polar'):
         raise ValueError("parity needs to be either: axial or polar")
+    if coord not in ('r', 'x'):
+        raise ValueError("coord needs to be either: r or x")
+    
+    if parity == 'axial':
+        coeffs = np.array([l*(l + 1), -3*M*(3 + l*(l + 1)), 24*M**2])
+        peak = np.max(np.roots(coeffs))
+    else:
+        res = minimize_scalar(
+            lambda r: -Vpm(r, M, l, "polar"), 
+            bounds=(2.1*M, 5*M), 
+            method='bounded'
+        )
+        peak = res.x
+
+    if coord == 'x':
+        peak = r_to_x(peak, M)
+    
     return peak
 
 def gaussian_wave(x, t, x0, sigma, omega):
