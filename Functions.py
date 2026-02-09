@@ -1,5 +1,6 @@
 import numpy as np 
 from scipy.special import lambertw
+from scipy.optimize import minimize_scalar
 
 j = complex(0, 1)
 
@@ -35,6 +36,17 @@ def Vpm(r, M, l, parity):
     else:
         raise ValueError("parity needs to be either: axial or polar")
     return V
+
+def Vpm_peak_r(M, l: int, parity):
+    if parity == 'axial':
+        coeffs = np.array([l*(l + 1), -3/2*(6*M + 2*M*l*(l + 1)), 24*M**2 ])
+        peak = np.max(np.roots(coeffs))
+    elif parity == 'polar':
+        res = minimize_scalar(lambda r: -Vpm(r, M, l, "polar"), bounds=(2.1*M, 5*M), method='bounded')
+        peak = res.x
+    else:
+        raise ValueError("parity needs to be either: axial or polar")
+    return peak
 
 def gaussian_wave(x, t, x0, sigma, omega):
     spatial = np.exp(-(x-x0)**2/(2*sigma**2))
