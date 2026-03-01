@@ -19,7 +19,7 @@ class SchwarzschildPerturbation:
     the RZW equation using a Leapfrog solver.
     """
 
-    def __init__(self, M=1, l=2, potential='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
+    def __init__(self, M=1.0, l=2, potential='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
         self.M = M
         self.l = l
         self.potential = potential
@@ -164,7 +164,7 @@ class SchwarzschildPerturbation:
         if fig_title is None:
             omega_display = rf", $\omega={omega:.2f}$" if omega is not None else ""
             fig_title = f"{self.potential.capitalize()} Perturbation: $M={self.M}$, $l={self.l}${omega_display}"
-        
+
         print(f"Generating frames for {output_path.name}...")
         
         for i, t_idx in enumerate(frame_indices):
@@ -181,7 +181,7 @@ class SchwarzschildPerturbation:
             ax.set_ylim(ylim)
             ax.set_xlim(xlimit)
             ax.set_xlabel(r'$r_*/2M$', fontsize = 25)
-            ax.set_ylabel(r'$\Psi$ & $4M^2 V$', fontsize = 25)
+            ax.set_ylabel(r'$\Psi$ \& $4M^2 V$', fontsize = 25)
             ax.grid(True, alpha = 0.6)
             ax.legend(loc='upper right', fontsize = 23)
             
@@ -248,7 +248,6 @@ if __name__ == "__main__":
     
     axial_sim.solve(Psi0, Nt = 8000, dPsi0 = dPsi0)
     
-    # This will now auto-create "SS_Perturbation_gifs/BH_M1.0_l2_axial_w0.50_real.gif"
     axial_sim.make_gif(component='real', frame_interval = 100, omega = omega)
 
 #     # Example 2: Polar l=3
@@ -256,6 +255,5 @@ if __name__ == "__main__":
 #     Psi0_polar = gaussian_initial_profile(sim_polar.rstar, rstar0 = 100*sim_polar.M, width = 10*sim_polar.M, omega = 0.8)
     
 #     sim_polar.solve(Psi0_polar, Nt = 8000)
-    
-#     # This will create "SS_Perturbation_gifs/BH_M1.0_l3_polar_w0.80_real.gif"
+
 #     sim_polar.make_gif(component='real', frame_interval = 50, omega = 0.8)
