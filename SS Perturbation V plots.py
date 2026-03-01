@@ -1,5 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rc
+
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Computer Modern Roman"],
+    "text.latex.preamble": "" # Clear the helvet and sansmath packages
+})
 
 def axial(r, M, l):
     V_axial = (1-2*M/r)*(l*(l+1)/r**2 - 6*M/r**3)
@@ -12,23 +20,40 @@ def polar(r, M, l):
     V_polar = coeff*mode
     return V_polar
 
-l_array = [2, 3, 4]
-M = 1
-eps = 1e-3
-r = np.linspace(2*M + eps, 10*M, 1000)
-colours = ['red', 'green', 'blue']
+l_array = [2, 3, 4, 5, 6]
+M = 1/2
+eps = 1e-6
+r = np.linspace(2*M + eps, 20*M, 3000)
 
-print("WORK ON LEGEND")
+def r_to_rstar(r, M):
+    r = np.asarray(r)
+    if np.any(r <= 2*M):
+        raise ValueError("All r must be > 2M")
+    return r + 2*M*np.log(r/(2*M) - 1)
 
-plt.figure(figsize = [6, 6])
+r_star = r_to_rstar(r, M)
+
+# plt.plot(r/M, r_star/M)
+# plt.plot(r/M, r/M)
+# plt.show()
+
+plt.figure(figsize = [8, 6])
 for i in range(len(l_array)):
+    lbl_p = 'Polar' if i == 0 else None
+    lbl_a = 'Axial' if i == 0 else None
     polar_V = polar(r, M, l_array[i])
     axial_V = axial(r, M, l_array[i])
-    plt.plot(r/M, polar_V, color = colours[i], label = f'Polar potential, l = {l_array[i]}')
-    plt.plot(r/M, axial_V, color = colours[i], label = f'Axial potential, l = {l_array[i]}', linestyle = '--')
-plt.xlabel('r/M', fontsize = 15)
-plt.ylabel('V', fontsize = 15)
+    plt.plot(r_star/(2*M), 4*M**2*polar_V, color = 'black', linewidth = 1.5, linestyle = '--', zorder = 3, label = lbl_p)
+    plt.plot(r_star/(2*M), 4*M**2*axial_V, color = 'red', linewidth = 1.5, label = lbl_a)
+plt.xlabel(r'$r_*/2M$', fontsize = 28)
+plt.ylabel(r'$4M^2V^{\pm}$', fontsize = 28)
+plt.title(r'Effective Potentials for $M = 0.5$', fontsize = 28)
+plt.xlim(-5, 10)
 plt.grid()
-plt.legend()
-plt.show()
+plt.xticks(fontsize = 17)
+plt.yticks(fontsize = 17)
+plt.legend(fontsize = 25)
+plt.tight_layout()
+plt.savefig('potentialplot.png', format = 'png')
+plt.close()
 
