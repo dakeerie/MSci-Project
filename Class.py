@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import imageio
 import os
 from pathlib import Path
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Computer Modern Roman"],
+    "text.latex.preamble": "" # Clear the helvet and sansmath packages
+})
 
 j = 1j 
 
@@ -13,7 +19,7 @@ class SchwarzschildPerturbation:
     the RZW equation using a Leapfrog solver.
     """
 
-    def __init__(self, M=1.0, l=2, potential='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
+    def __init__(self, M=1, l=2, potential='axial', rstar_min=-400, rstar_max=700, dx=0.1, dt=None):
         self.M = M
         self.l = l
         self.potential = potential
@@ -100,7 +106,7 @@ class SchwarzschildPerturbation:
         return self
 
     def make_gif(self, filename = None, component = 'real', fps = 10, frame_interval = 100,
-                ylim = None, show_potential = True, omega = None, fig_title = None):
+                ylim = None, show_potential = True, omega = None, fig_title = None, xlimit = None):
         """
         Create an animated GIF in the 'SS_Perturbation_gifs' folder.
         
@@ -139,10 +145,13 @@ class SchwarzschildPerturbation:
 
         if component == 'real':
             wave_data = self.Psi.real
+            lbl = r'$\Re(\Psi)$'
         elif component == 'imag':
             wave_data = self.Psi.imag
+            lbl = r'$\Im(\Psi)$'
         elif component == 'abs':
             wave_data = np.abs(self.Psi)
+            lbl = r'$|{\Psi}|$'
         else:
             raise ValueError("component must be 'real', 'imag', or 'abs'")
         
@@ -153,7 +162,7 @@ class SchwarzschildPerturbation:
         frame_indices = range(0, self.Nt, frame_interval)
 
         if fig_title is None:
-            omega_display = f", $\\omega={omega:.2f}$" if omega is not None else ""
+            omega_display = rf", $\omega={omega:.2f}$" if omega is not None else ""
             fig_title = f"{self.potential.capitalize()} Perturbation: $M={self.M}$, $l={self.l}${omega_display}"
         
         print(f"Generating frames for {output_path.name}...")
@@ -161,19 +170,20 @@ class SchwarzschildPerturbation:
         for i, t_idx in enumerate(frame_indices):
             fig, ax = plt.subplots(figsize=(8, 5))
             
-            ax.plot(self.rstar, wave_data[t_idx, :], label=f'$\\Psi$ ({component})')
+            ax.plot(self.rstar/(2*self.M), wave_data[t_idx, :], label=lbl)
             
             if show_potential:
-                ax.plot(self.rstar, self.V,
-                        label=rf'Potential $V_{{eff}}$', zorder=0)
+                ax.plot(self.rstar/(2*self.M), 4*self.M**2*self.V,
+                        label = 'Potential', zorder=0)
             
-            ax.set_title(fig_title, fontsize=16)
-            ax.tick_params(labelsize=12)
+            ax.set_title(fig_title, fontsize=25)
+            ax.tick_params(labelsize = 18)
             ax.set_ylim(ylim)
-            ax.set_xlabel(r'$r_* / M$', fontsize=14)
-            ax.set_ylabel(r'$\Psi$', fontsize=14)
-            ax.grid(True, alpha=0.3)
-            ax.legend(loc='upper right')
+            ax.set_xlim(xlimit)
+            ax.set_xlabel(r'$r_*/2M$', fontsize = 25)
+            ax.set_ylabel(r'$\Psi$ & $4M^2 V$', fontsize = 25)
+            ax.grid(True, alpha = 0.6)
+            ax.legend(loc='upper right', fontsize = 23)
             
             frame_path = temp_dir / f'frame_{i:04d}.png'
             plt.savefig(frame_path, dpi = 100, bbox_inches='tight', facecolor='white')
