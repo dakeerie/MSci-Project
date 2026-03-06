@@ -21,7 +21,7 @@ def polar(r, M, l):
     return V_polar
 
 l_array = [2, 3, 4, 5, 6]
-M = 1/2
+M = 0.5
 eps = 1e-6
 r = np.linspace(2*M + eps, 20*M, 3000)
 
@@ -47,12 +47,12 @@ for i in range(len(l_array)):
     plt.plot(r_star/(2*M), 4*M**2*axial_V, color = 'red', linewidth = 1.5, label = lbl_a)
 plt.xlabel(r'$r_*/2M$', fontsize = 28)
 plt.ylabel(r'$4M^2V^{\pm}$', fontsize = 28)
-plt.title(r'Effective Potentials for $M = 0.5$', fontsize = 28)
+plt.title(r'Effective Potentials', fontsize = 28)
 plt.xlim(-5, 10)
 plt.grid()
-plt.xticks(fontsize = 17)
-plt.yticks(fontsize = 17)
-plt.legend(fontsize = 25)
+plt.xticks(fontsize = 20)
+plt.yticks(fontsize = 20)
+plt.legend(fontsize = 25, loc = 'center right')
 plt.tight_layout()
 plt.savefig('potentialplot.png', format = 'png')
 plt.close()
