@@ -29,7 +29,7 @@ class SchwarzschildPerturbation:
         if self.dt > self.dx:
             raise ValueError("CFL condition violated: dt must be <= dx")
         
-        self.rstar = np.arange(rstar_min*M, (rstar_max + dx)*M, dx)
+        self.rstar = np.arange(rstar_min*2*M, (rstar_max + dx)*2*M, dx)
         self.r = self._rstar_to_r(self.rstar)
         self.V = self._compute_potential()
 
@@ -170,7 +170,7 @@ class SchwarzschildPerturbation:
         for i, t_idx in enumerate(frame_indices):
             fig, ax = plt.subplots(figsize=(8, 5))
             
-            ax.plot(self.rstar/(2*self.M), wave_data[t_idx, :], label=lbl)
+            ax.plot(self.rstar/(2*self.M), 2*self.M*wave_data[t_idx, :], label=lbl)
             
             if show_potential:
                 ax.plot(self.rstar/(2*self.M), 4*self.M**2*self.V,
@@ -181,7 +181,7 @@ class SchwarzschildPerturbation:
             ax.set_ylim(ylim)
             ax.set_xlim(xlimit)
             ax.set_xlabel(r'$r_*/2M$', fontsize = 25)
-            ax.set_ylabel(r'$\Psi$ \& $4M^2 V$', fontsize = 25)
+            ax.set_ylabel(r'$2M \Psi$ \& $4M^2 V$', fontsize = 25)
             ax.grid(True, alpha = 0.6)
             ax.legend(loc='upper right', fontsize = 23)
             
