@@ -27,6 +27,7 @@ parser.add_argument('--omega', type = float, required = True, help = 'Incident w
 args = parser.parse_args()
 mode = args.mode
 omega = args.omega
+x_max = 0.95
 
 # omega_dict = {
 #     2: complex(0.74734, -0.17792),
@@ -59,7 +60,7 @@ class adaptive_tanh(nn.Module):
         return (1 + self.beta*x)*t.tanh(x)
 
 class Model(nn.Module):
-    def __init__(self, in_channels, out_channels, hidden_channels, num_hidden_layers=2, T_init = None, R_init = None):
+    def __init__(self, in_channels, out_channels, hidden_channels, num_hidden_layers=2, alpha_init = complex(1, 0), beta_init = complex(0, 1)):
         super().__init__() 
         self.input_layer = nn.Linear(in_channels, hidden_channels)
         self.act_input = adaptive_tanh(hidden_channels)
@@ -72,10 +73,10 @@ class Model(nn.Module):
 
         self.output_layer = nn.Linear(hidden_channels, out_channels) 
 
-        self.T_re = nn.Parameter(t.tensor(T_init.real, dtype = DTYPE), requires_grad = False)
-        self.T_im = nn.Parameter(t.tensor(T_init.imag, dtype = DTYPE), requires_grad = False)
-        self.R_re = nn.Parameter(t.tensor(R_init.real, dtype = DTYPE), requires_grad = False)
-        self.R_im = nn.Parameter(t.tensor(R_init.imag, dtype = DTYPE), requires_grad = False)
+        self.alpha_re = nn.Parameter(t.tensor(alpha_init.real, dtype = DTYPE), requires_grad = False)
+        self.alpha_im = nn.Parameter(t.tensor(alpha_init.imag, dtype = DTYPE), requires_grad = False)
+        self.beta_re = nn.Parameter(t.tensor(beta_init.real, dtype = DTYPE), requires_grad = False)
+        self.beta_im = nn.Parameter(t.tensor(beta_init.imag, dtype = DTYPE), requires_grad = False)
 
     def forward(self, x: t.tensor):
         x = self.input_layer(x)
@@ -110,15 +111,24 @@ def A(x):
 def B(x, M, omega):
     return (1 - x)*(1 - 3*x) - 4*M*j*omega
         
-
 def C(x, l):
     return l*(l + 1) - 3*(1 - x)
 
+def reciprocal_z(z):
+    z_re, z_im = z.real, z.imag
+    mod_sq_z = z_re**2 + z_im**2
+    conjugate = complex(z_re, -z_im)
+    return conjugate/mod_sq_z
+
+#ANNEALING NEEDS WORK
 def annealing(epoch, total_epochs):
     if epoch <= 0.2*total_epochs:
         BC = 100.0
-        NT = 100.0
+        AMPLITUDE = 100.0
+        UMAX = 0.01
+        UMAX_DERIV = 0.01
         ODE = 0.01
+        WRON = 1.0
 
     elif 0.2*total_epochs < epoch < 0.6*total_epochs:
         BC = (10.0 - 100.0)/(0.6 - 0.2)*(epoch/total_epochs) + 145
@@ -135,15 +145,17 @@ def annealing(epoch, total_epochs):
         NT = 10.0
         ODE = (5.0 - 1.0)/(1.0 - 0.8)*(epoch/total_epochs) - 15
     
-    return [BC, NT, BC, ODE]
+    return [BC, AMPLITUDE, UMAX, UMAX_DERIV, ODE, WRON]
 
-def compute_loss(model, x_tensor, weights, mass, mode):
-    """weights: [weight_horizon, weight_NT, weight_infinity, weight_ODE]
-    returns: Re(w_nn), Im(w_nn), total loss, horizon loss, non-trivial loss, infinity loss, ODE loss, Re(ODE loss), Im(ODE loss)"""
+def compute_loss(model, x_tensor, weights, mass, mode, omega):
+    """weights: [weight_horizon, weight_amplitude, weight_umax, 
+    weight_umax_deriv, weight_ODE, weight_wronskian]
+    returns: Re(w_nn), Im(w_nn), total loss, horizon loss, amplitude loss, 
+    u boundary loss, u' boundary loss, ODE loss, Re(ODE loss), Im(ODE loss), wronskian loss"""
 
     #Boundary tensors
     x_horizon = t.tensor(0., requires_grad = True, dtype = DTYPE, device = device).view(-1, 1)
-    x_infinity = t.tensor(1., requires_grad = True, dtype = DTYPE, device = device).view(-1, 1) 
+    x_max = t.tensor(x_max, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1) 
 
     #Horizon loss
     u_h = model(x_horizon)
@@ -155,7 +167,7 @@ def compute_loss(model, x_tensor, weights, mass, mode):
     B_h_re, B_h_im = B_h.real, B_h.imag
     C_h = C(x_horizon, mode)
 
-    #Robin Boundary Conditions
+    #Robin Boundary Condition
     loss_horizon_re = B_h_re*du_h_re - B_h_im*du_h_im + C_h*u_h_re
     loss_horizon_im = B_h_im*du_h_re + B_h_re*du_h_im + C_h*u_h_im
     loss_horizon = t.mean(loss_horizon_re**2 + loss_horizon_im**2)
@@ -163,20 +175,26 @@ def compute_loss(model, x_tensor, weights, mass, mode):
     #Incident wave asymptotic amplitude
     loss_amplitude = t.mean((1.0 - u_h_re)**2 + (0.0 - u_h_im)**2)
 
-    #Infinity loss
-    u_inf = model(x_infinity)
-    u_inf_re, u_inf_im = u_inf[:, 0:1], u_inf[:, 1:2]
-    du_inf_re = first_grad(u_inf_re, x_infinity)
-    du_inf_im = first_grad(u_inf_im, x_infinity)
+    #x_max BC loss terms
+    u_max = model(x_max)
+    u_max_re, u_max_im = u_max[:, 0:1], u_max[:, 1:2]
+    du_max_re = first_grad(u_max_re, x_max)
+    du_max_im = first_grad(u_max_im, x_max)
 
-    B_inf = B(x_infinity, mass, omega)
-    B_inf_re, B_inf_im = B_inf.real, B_inf.imag
-    C_inf = C(x_infinity, mode)
+    #u boundary term: (u_NN - u_analytical)|_x_max
+    rstar_max = r_to_rstar(x_to_r(x_max, mass), mass)
+    boundary_real = u_max_re - (model.alpha_re + model.beta_re*np.cos(2*omega*rstar_max)
+                        - model.beta_im*np.sin(2*omega*rstar_max))
+    boundary_imag = u_max_im - (model.alpha_im + model.beta_im*np.cos(2*omega*rstar_max)
+                        + model.beta_re*np.sin(2*omega*rstar_max))
+    loss_u_max = t.mean(boundary_real**2 + boundary_imag**2)
 
-
-    loss_infinity_re = (B_inf_re*du_inf_re - B_inf_im*du_inf_im + C_inf*u_inf_re)
-    loss_infinity_im = (B_inf_im*du_inf_re + B_inf_re*du_inf_im + C_inf*u_inf_im)
-    loss_infinity = t.mean(loss_infinity_re**2 + loss_infinity_im**2)
+    #u derivative boundary term: (u'_NN - u'_analytical)|_x_max
+    deriv_boundary_real = du_max_re + (model.beta_im*np.cos(2*omega*rstar_max) 
+                                        + model.beta_re*np.sin(2*omega*rstar_max))
+    deriv_boundary_imag = du_max_im - (model.beta_re*np.cos(2*omega*rstar_max)
+                                        - model.beta_im*np.sin(2*omega*rstar_max))
+    loss_deriv_u_max = t.mean(deriv_boundary_real**2 + deriv_boundary_imag**2)
 
     #Physics loss
     u_nn = model(x_tensor)
@@ -193,38 +211,44 @@ def compute_loss(model, x_tensor, weights, mass, mode):
     loss_ode_im = (A_*d2u_nn_im + B_im*du_nn_re + B_re*du_nn_im + C_*u_nn_im)
     loss_ode = t.mean(loss_ode_re**2 + loss_ode_im**2)
 
-    total_loss = (weights[0]*loss_horizon + weights[1]*loss_amplitude + 
-                weights[2]*loss_infinity + weights[3]*loss_ode)
+    #Wronskian/Probability flux conservation loss
+    loss_wronskian = 1 - (1 + model.beta_re**2 + model.beta_im**2)/(model.alpha_re**2 + model.alpha_im**2)
+
+    total_loss = (weights[0]*loss_horizon + weights[1]*loss_amplitude + weights[2]*loss_u_max
+                + weights[3]*loss_deriv_u_max + weights[4]*loss_ode + weights[5]*loss_wronskian)
     
-    return u_nn_re, u_nn_im, total_loss, loss_horizon, loss_amplitude, loss_infinity, loss_ode, loss_ode_re, loss_ode_im
+    return u_nn_re, u_nn_im, total_loss, loss_horizon, loss_amplitude, loss_u_max, loss_deriv_u_max, loss_ode, loss_ode_re, loss_ode_im, loss_wronskian
 
-#START HERE
-
-omega = omega_dict[mode]
-rho = -1j*omega
-rho_perturbed = rho + complex(np.random.uniform(-delta, delta), np.random.uniform(-delta, delta))
+# omega = omega_dict[mode]
+# rho = -1j*omega
+# rho_perturbed = rho + complex(np.random.uniform(-delta, delta), np.random.uniform(-delta, delta))
 
 print('-'*30)
-print(f'Starting training for l = {mode} with delta = {delta}')
-initial_dist = np.abs(rho_perturbed - rho)
-print(f"Initial rho: {rho_perturbed.real:.5f} + {rho_perturbed.imag:.5f}i")
-print(f"Target rho: {rho.real:.5f} + {rho.imag:.5f}i")
-print(f"Initial distance from target: {initial_dist:.5f}")
+print(f'Starting training for l = {mode} with omega = {omega}')
+# initial_dist = np.abs(rho_perturbed - rho)
+# print(f"Initial rho: {rho_perturbed.real:.5f} + {rho_perturbed.imag:.5f}i")
+# print(f"Target rho: {rho.real:.5f} + {rho.imag:.5f}i")
+# print(f"Initial distance from target: {initial_dist:.5f}")
 print('-'*30)
 
 loss_h = []
-loss_nt = []
-loss_inf = []
+loss_amp = []
+loss_umax = []
+loss_umax_deriv = []
 loss_ODE = []
+loss_wronskian = []
 loss_total = []
-rho_real_array = []
-rho_imag_array = []
+alpha_real_array = []
+alpha_imag_array = []
+beta_real_array = []
+beta_imag_array = []
 
 N_points = 10000
 learning_rate = 1e-3
-model = Model(1, 2, 32, num_hidden_layers = 3, rho_init = rho_perturbed).to(device = device, dtype = DTYPE)
+model = Model(1, 2, 32, num_hidden_layers = 3).to(device = device, dtype = DTYPE)
 
-adam_parameters = [p for p in model.parameters() if p is not model.rho_re and p is not model.rho_im]
+adam_parameters = [p for p in model.parameters() if p is not model.alpha_re and p is not model.alpha_im 
+                and p is not model.beta_re and p is not model.beta_im]
 
 optimiser = optim.Adam(adam_parameters, lr = learning_rate)
 
@@ -233,46 +257,62 @@ Adam_iterations = 18000
 for epoch in range(Adam_iterations):
     optimiser.zero_grad()
     N_uniform = int(0.65*N_points)
-    x_uniform = t.rand((N_uniform, 1), dtype = DTYPE, device = device)
+    x_uniform = x_max*t.rand((N_uniform, 1.0), dtype = DTYPE, device = device)
 
     N_edges = N_points - N_uniform
-    beta_dist = dist.Beta(t.tensor([0.5]), t.tensor([0.5]))
-    x_edges = beta_dist.sample((N_edges,)).view(-1, 1).to(device = device, dtype = DTYPE)
+    beta_dist = dist.Beta(t.tensor([0.5], device = device), t.tensor([0.5], device = device))
+    x_edges = x_max*beta_dist.sample((N_edges,)).view(-1, 1).to(device = device, dtype = DTYPE)
 
     x_tensor = t.cat([x_uniform, x_edges], dim = 0)
     x_tensor.requires_grad_(True)
 
     if epoch == int(0.5*Adam_iterations):
-        print("Unfreezing rho...")
-        model.rho_re.requires_grad = True
-        model.rho_im.requires_grad = True
-        optimiser.add_param_group({'params': [model.rho_re, model.rho_im], 'lr': 1e-4})
+        print("Unfreezing coefficients...")
+        model.alpha_re.requires_grad = True
+        model.alpha_im.requires_grad = True
+        model.beta_re.requires_grad = True
+        model.beta_im.requires_grad = True
+        optimiser.add_param_group({'params': [model.alpha_re, model.alpha_im, 
+                                            model.beta_re, model.beta_im], 'lr': 1e-4})
 
     loss_weights = annealing(epoch, Adam_iterations)
-    Re_w_nn, Im_w_nn, loss, l_h, l_nt, l_inf, l_ode, l_ode_re, l_ode_im = compute_loss(model, x_tensor, loss_weights, mass, mode)
+    Re_u_nn, Im_u_nn, loss, l_h, l_amp, l_umax, l_umax_deriv, l_ode, l_ode_re, \
+        l_ode_im, l_wron = compute_loss(model, x_tensor, loss_weights, mass, mode, omega)
 
     loss.backward()
     optimiser.step()
 
-    rho_real_array.append(model.rho_re.item())
-    rho_imag_array.append(model.rho_im.item())
+    alpha_real_array.append(model.alpha_re.item())
+    alpha_imag_array.append(model.alpha_im.item())
+    beta_real_array.append(model.beta_re.item())
+    beta_imag_array.append(model.beta_im.item())
 
     with t.no_grad():
         loss_h.append(l_h.item())
-        loss_nt.append(l_nt.item())
-        loss_inf.append(l_inf.item())
+        loss_amp.append(l_amp.item())
+        loss_umax.append(l_umax.item())
+        loss_umax_deriv.append(l_umax_deriv.item())
         loss_ODE.append(l_ode.item())
+        loss_wronskian.append(l_wron.item())
         loss_total.append(loss.item())
 
     if (epoch + 1) % 500 == 0 or epoch == 0 or epoch == (Adam_iterations - 1):
+        T = reciprocal_z(complex(model.alpha_re.item(), model.alpha_im.item()))
+        R = complex(model.beta_re, model.beta_im)*T
+        wronskian = np.abs(T)**2 + np.abs(R)**2
         print(f"""Epoch: {epoch + 1} / {Adam_iterations}. Total scaled loss: {loss.item():.4e}, 
                     ODE(0) loss: {l_h.item():.4e}, 
-                    ODE(1) loss: {l_inf.item():.4e}, 
-                    Non-trivial solution loss: {l_nt.item():.4e},
+                    Amplitude loss: {l_amp.item():.4e}, 
+                    u(x_max) loss: {l_umax.item():.4e},
+                    u'(x_max) loss: {l_umax_deriv.item():.4e},
                     Physics loss: {l_ode.item():.4e},
-                    Initial value of rho: {rho_perturbed.real:.5f} + {rho_perturbed.imag:.5f}i,
-                    Current value of rho: {model.rho_re.item():.5f} + {model.rho_im.item():.5f}i,
-                    Target rho: {rho.real} + {rho.imag}""")
+                    Wronskian loss: {l_wron.item():.4e},
+                    Current value of alpha: {model.alpha_re.item():.5f} + {model.alpha_im.item():.5f}i,
+                    Current value of beta: {model.beta_re.item():.5f} + {model.beta_im.item():.5f}i,
+                    Current value of T: {T:.5f}
+                    Current value of R: {R:.5f}
+                    Current value of |T|^2 + |R|^2: {wronskian:.5f}
+                    """)
         print("-"*30)
 
     if (epoch + 1) % 1000 == 0:
@@ -281,14 +321,14 @@ for epoch in range(Adam_iterations):
 
         res_re_plot = l_ode_re.cpu().detach().numpy().flatten()
         res_im_plot = l_ode_im.cpu().detach().numpy().flatten()
-        w_re_plot = Re_w_nn.cpu().detach().numpy().flatten()
-        w_im_plot = Im_w_nn.cpu().detach().numpy().flatten()
+        u_re_plot = Re_u_nn.cpu().detach().numpy().flatten()
+        u_im_plot = Im_u_nn.cpu().detach().numpy().flatten()
 
         plt.figure()
         plt.plot(x_np[idx], res_re_plot[idx], color = 'blue', label = r'$\Re (Res_{ODE})$')
         plt.plot(x_np[idx], res_im_plot[idx], color = 'green', label = r'$\Im (Res_{ODE})$')
-        plt.plot(x_np[idx], w_re_plot[idx], color = 'orange', label = r'$\Re (w_{NN})$')
-        plt.plot(x_np[idx], w_im_plot[idx], color = 'red', label = r'$\Im (w_{NN})$')
+        plt.plot(x_np[idx], u_re_plot[idx], color = 'orange', label = r'$\Re (u_{NN})$')
+        plt.plot(x_np[idx], u_im_plot[idx], color = 'red', label = r'$\Im (u_{NN})$')
         plt.xlabel('x', fontsize = 25)
         plt.ylabel('Output', fontsize = 25)
         plt.grid()
@@ -300,9 +340,11 @@ for epoch in range(Adam_iterations):
         plt.figure()
         plt.plot(loss_total, label = 'Total')
         plt.plot(loss_h, label = 'Horizon')
-        plt.plot(loss_inf, label = 'Infinity')
+        plt.plot(loss_amp, label = 'Amplitude')
+        plt.plot(loss_umax, label = 'u(x_max)')
+        plt.plot(loss_umax_deriv, label = "u'(x_max)")
         plt.plot(loss_ODE, label ='ODE')
-        plt.plot(loss_nt, label = 'Non-trivial solution')
+        plt.plot(loss_wronskian, label = 'Wronskian')
         plt.yscale('log')
         plt.ylabel('Loss', fontsize = 25)
         plt.xlabel('Epoch', fontsize = 25)
@@ -314,8 +356,10 @@ for epoch in range(Adam_iterations):
 
 print("Adam training complete. Switching to L-BFGS:")
 
-model.rho_re.requires_grad = True
-model.rho_im.requires_grad = True
+model.alpha_re.requires_grad = True
+model.alpha_im.requires_grad = True
+model.beta_re.requires_grad = True
+model.beta_im.requires_grad = True
 
 lbfgs_optimiser = t.optim.LBFGS(model.parameters(), lr = 1.0, max_iter = 20,
             history_size = 50, line_search_fn = 'strong_wolfe')
@@ -325,29 +369,30 @@ lbfgs_weights = [10.0, 10.0, 10.0, 1.0]
 
 for epoch in range(lbfgs_iterations):
     N_uniform = int(0.65*N_points)
-    x_uniform = t.rand((N_uniform, 1), dtype = DTYPE, device = device)
+    x_uniform = x_max*t.rand((N_uniform, 1), dtype = DTYPE, device = device)
 
     N_edges = N_points - N_uniform
     beta_dist = dist.Beta(t.tensor([0.5]), t.tensor([0.5]))
-    x_edges = beta_dist.sample((N_edges,)).view(-1, 1).to(device = device, dtype = DTYPE)
+    x_edges = x_max*beta_dist.sample((N_edges,)).view(-1, 1).to(device = device, dtype = DTYPE)
 
     x_tensor = t.cat([x_uniform, x_edges], dim = 0)
     x_tensor.requires_grad_(True)
 
-    info = {'total': 0, 'h': 0, 'nt': 0, 'inf': 0, 'ode':0}
+    info = {'total': 0, 'h': 0, 'amp': 0, 'umax': 0, 'umaxderiv':0, 'ode':0, 'wronskian': 0}
     plot_data = {}
 
     def closure():
         lbfgs_optimiser.zero_grad()
 
-        Re_w_nn, Im_w_nn, loss, l_h, l_nt, l_inf, l_ode, l_ode_re, l_ode_im = compute_loss(model, x_tensor, lbfgs_weights, mass, mode)       
+        Re_u_nn, Im_u_nn, loss, l_h, l_amp, l_umax, l_umax_deriv, l_ode, l_ode_re, l_ode_im, l_wron = compute_loss(model, x_tensor, lbfgs_weights, mass, mode, omega)       
         loss.backward()
 
-        info.update({'total': loss.item(), 'h': l_h.item(), 'nt': l_nt.item(), 'inf': l_inf.item(), 'ode': l_ode.item()})
+        info.update({'total': loss.item(), 'h': l_h.item(), 'amp': l_amp.item(), \
+                    'umax': l_umax.item(), 'umaxderiv': l_umax_deriv, 'ode': l_ode.item(), 'wronskian': l_wron.item()})
 
         plot_data['x'] = x_tensor.cpu().detach().numpy()
-        plot_data['re_w'] = Re_w_nn.cpu().detach().numpy()
-        plot_data['im_w'] = Im_w_nn.cpu().detach().numpy()
+        plot_data['re_w'] = Re_u_nn.cpu().detach().numpy()
+        plot_data['im_w'] = Im_u_nn.cpu().detach().numpy()
         plot_data['res_re'] = l_ode_re.cpu().detach().numpy()
         plot_data['res_im'] = l_ode_im.cpu().detach().numpy()
 
@@ -356,13 +401,19 @@ for epoch in range(lbfgs_iterations):
     lbfgs_optimiser.step(closure)
 
     loss_h.append(info['h'])
-    loss_nt.append(info['nt'])
-    loss_inf.append(info['inf'])
+    loss_amp.append(info['amp'])
+    loss_umax.append(info['umax'])
+    loss_umax_deriv.append(info['umaxderiv'])
     loss_ODE.append(info['ode'])
+    loss_wronskian.append(info['wronskian'])
     loss_total.append(info['total'])
 
-    rho_real_array.append(model.rho_re.item())
-    rho_imag_array.append(model.rho_im.item())
+    alpha_real_array.append(model.alpha_re.item())
+    alpha_imag_array.append(model.alpha_im.item())
+    beta_real_array.append(model.beta_re.item())
+    beta_imag_array.append(model.beta_im.item())
+
+    #START HERE
 
     if (epoch + 1) % 100 == 0:
         print(f"""L-BFGS Epoch: {epoch + 1} / {lbfgs_iterations}. Total scaled loss: {info['total']:.4e}, 
