@@ -1,0 +1,47 @@
+000 (308340.022.000) 2026-03-03 11:31:17 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308340.022.000) 2026-03-03 11:58:14 Job executing on host: <130.209.45.81:9619?addrs=130.209.45.81-9619&alias=wiay.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_1@wiay.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_df018c53 }
+	CondorScratchDir = "/var/lib/condor/execute/dir_380507"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_df018c53 = [ Id = "GPU-df018c53"; ClockMhz = 1545.0; Capability = 7.5; CoresPerCU = 64; DeviceName = "NVIDIA GeForce RTX 2080 Ti"; DeviceUuid = "df018c53-b27b-0d21-a520-70ec0819ac12"; ECCEnabled = false; ComputeUnits = 68; NvidiaDriver = "555.42.06"; DriverVersion = 12.5; DevicePciBusId = "0000:D9:00.0"; GlobalMemoryMb = 10827; MaxSupportedVersion = 12050 ]
+	Memory = 2048
+...
+006 (308340.022.000) 2026-03-03 11:58:23 Image size of job updated: 730928
+	714  -  MemoryUsage of job (MB)
+	730928  -  ResidentSetSize of job (KB)
+...
+006 (308340.022.000) 2026-03-03 12:03:24 Image size of job updated: 803676
+	785  -  MemoryUsage of job (MB)
+	803676  -  ResidentSetSize of job (KB)
+...
+006 (308340.022.000) 2026-03-03 12:08:24 Image size of job updated: 963880
+	930  -  MemoryUsage of job (MB)
+	952044  -  ResidentSetSize of job (KB)
+...
+006 (308340.022.000) 2026-03-03 12:13:16 Image size of job updated: 1062216
+	930  -  MemoryUsage of job (MB)
+	952044  -  ResidentSetSize of job (KB)
+...
+005 (308340.022.000) 2026-03-03 12:13:16 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:14:36, Sys 0 00:00:12  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:14:36, Sys 0 00:00:12  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.27        1         1 "GPU-df018c53"
+	   GpusMemory (MB)      :   822                       
+	   Memory (MB)          :   930        2048      2048 
+	   TimeExecute (s)      :   902                       
+	   TimeSlotBusy (s)     :   902                       
+...

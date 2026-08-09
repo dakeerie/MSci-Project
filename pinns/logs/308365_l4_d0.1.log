@@ -1,0 +1,51 @@
+000 (308365.010.000) 2026-03-03 13:51:46 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308365.010.000) 2026-03-03 14:11:37 Job executing on host: <130.209.45.56:9619?addrs=130.209.45.56-9619&alias=serenity.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_2@serenity.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_625f6b03 }
+	CondorScratchDir = "/var/lib/condor/execute/dir_314191"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_625f6b03 = [ Id = "GPU-625f6b03"; ClockMhz = 1695.0; Capability = 8.6; CoresPerCU = 128; DeviceName = "NVIDIA GeForce RTX 3090"; DeviceUuid = "625f6b03-2809-23ef-06f5-609bcf7f9386"; ECCEnabled = false; ComputeUnits = 82; NvidiaDriver = "535.247.01"; DriverVersion = 12.2; DevicePciBusId = "0000:68:00.0"; GlobalMemoryMb = 24257; MaxSupportedVersion = 12020 ]
+	Memory = 2048
+...
+006 (308365.010.000) 2026-03-03 14:11:46 Image size of job updated: 323292
+	316  -  MemoryUsage of job (MB)
+	323292  -  ResidentSetSize of job (KB)
+...
+006 (308365.010.000) 2026-03-03 14:16:47 Image size of job updated: 837284
+	818  -  MemoryUsage of job (MB)
+	837284  -  ResidentSetSize of job (KB)
+...
+006 (308365.010.000) 2026-03-03 14:21:48 Image size of job updated: 1013044
+	990  -  MemoryUsage of job (MB)
+	1013044  -  ResidentSetSize of job (KB)
+...
+006 (308365.010.000) 2026-03-03 14:26:48 Image size of job updated: 1095528
+	1070  -  MemoryUsage of job (MB)
+	1095528  -  ResidentSetSize of job (KB)
+...
+006 (308365.010.000) 2026-03-03 14:29:44 Image size of job updated: 1173968
+	1070  -  MemoryUsage of job (MB)
+	1095528  -  ResidentSetSize of job (KB)
+...
+005 (308365.010.000) 2026-03-03 14:29:44 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:17:36, Sys 0 00:00:11  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:17:36, Sys 0 00:00:11  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     1.00        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.16        1         1 "GPU-625f6b03"
+	   GpusMemory (MB)      :   827                       
+	   Memory (MB)          :  1070        2048      2048 
+	   TimeExecute (s)      :  1087                       
+	   TimeSlotBusy (s)     :  1087                       
+...

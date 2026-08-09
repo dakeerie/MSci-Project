@@ -1,0 +1,10 @@
+run_id=30
+mode=2
+delta=0.6
+rho_re=-0.58296639
+rho_im=-0.74309808
+omega_re=0.74309808
+omega_im=-0.58296639
+target_omega_re=0.74734000
+target_omega_im=-0.17792000
+final_distance=0.40506860

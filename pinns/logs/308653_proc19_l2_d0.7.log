@@ -1,0 +1,47 @@
+000 (308653.019.000) 2026-03-10 15:43:58 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308653.019.000) 2026-03-10 16:31:58 Job executing on host: <130.209.45.81:9619?addrs=130.209.45.81-9619&alias=wiay.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_1@wiay.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_916f8cd9 }
+	CondorScratchDir = "/var/lib/condor/execute/dir_457460"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_916f8cd9 = [ Id = "GPU-916f8cd9"; ClockMhz = 1380.0; Capability = 7.0; CoresPerCU = 64; DeviceName = "Tesla V100-PCIE-32GB"; DeviceUuid = "916f8cd9-482d-5a9d-e82e-dc4416936330"; ECCEnabled = true; ComputeUnits = 80; NvidiaDriver = "555.42.06"; DriverVersion = 12.5; DevicePciBusId = "0000:3B:00.0"; GlobalMemoryMb = 32494; MaxSupportedVersion = 12050 ]
+	Memory = 2048
+...
+006 (308653.019.000) 2026-03-10 16:32:07 Image size of job updated: 729676
+	713  -  MemoryUsage of job (MB)
+	729676  -  ResidentSetSize of job (KB)
+...
+006 (308653.019.000) 2026-03-10 16:37:08 Image size of job updated: 821992
+	803  -  MemoryUsage of job (MB)
+	821992  -  ResidentSetSize of job (KB)
+...
+006 (308653.019.000) 2026-03-10 16:42:08 Image size of job updated: 966188
+	944  -  MemoryUsage of job (MB)
+	966188  -  ResidentSetSize of job (KB)
+...
+006 (308653.019.000) 2026-03-10 16:44:35 Image size of job updated: 1059404
+	944  -  MemoryUsage of job (MB)
+	966188  -  ResidentSetSize of job (KB)
+...
+005 (308653.019.000) 2026-03-10 16:44:35 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:12:17, Sys 0 00:00:10  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:12:17, Sys 0 00:00:10  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.29        1         1 "GPU-916f8cd9"
+	   GpusMemory (MB)      :  1790                       
+	   Memory (MB)          :   944        2048      2048 
+	   TimeExecute (s)      :   757                       
+	   TimeSlotBusy (s)     :   757                       
+...

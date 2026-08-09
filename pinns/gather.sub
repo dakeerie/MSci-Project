@@ -1,0 +1,12 @@
+universe = vanilla
+log    = logs/gather_$(Cluster).log
+error  = logs/gather_$(Cluster).err
+output = logs/gather_$(Cluster).out
+executable = /cvmfs/software.igwn.org/conda/condabin/conda
+arguments = run -n pinns python gather_results.py --mode $(l_mode) --delta $(qnm_delta) --n_runs 50
+request_cpus = 1
+request_memory = 1GB
+request_gpus = 0
+notification = Complete
+notify_user = 2665592k@student.gla.ac.uk
+queue 1 l_mode, qnm_delta from (2 0.6)

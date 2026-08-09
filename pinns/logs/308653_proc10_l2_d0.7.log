@@ -1,0 +1,59 @@
+000 (308653.010.000) 2026-03-10 15:43:58 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308653.010.000) 2026-03-10 16:08:59 Job executing on host: <130.209.45.193:9619?addrs=130.209.45.193-9619&alias=deimos.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_1@deimos.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_9ed99095 }
+	CondorScratchDir = "/var/lib/condor/execute/dir_474570"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_9ed99095 = [ Id = "GPU-9ed99095"; ClockMhz = 1695.0; Capability = 8.6; CoresPerCU = 128; DeviceName = "NVIDIA GeForce RTX 3090"; DeviceUuid = "9ed99095-ea7d-ae22-8aa3-a439270c7875"; ECCEnabled = false; ComputeUnits = 82; NvidiaDriver = "580.82.07"; DriverVersion = 13.0; DevicePciBusId = "0000:3B:00.0"; GlobalMemoryMb = 24124; MaxSupportedVersion = 13000 ]
+	Memory = 2048
+...
+006 (308653.010.000) 2026-03-10 16:09:07 Image size of job updated: 461356
+	451  -  MemoryUsage of job (MB)
+	461356  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:14:07 Image size of job updated: 879564
+	859  -  MemoryUsage of job (MB)
+	879564  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:19:08 Image size of job updated: 926448
+	905  -  MemoryUsage of job (MB)
+	926448  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:24:09 Image size of job updated: 1087704
+	1063  -  MemoryUsage of job (MB)
+	1087704  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:29:10 Image size of job updated: 1115764
+	1090  -  MemoryUsage of job (MB)
+	1115764  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:34:10 Image size of job updated: 1206728
+	1179  -  MemoryUsage of job (MB)
+	1206728  -  ResidentSetSize of job (KB)
+...
+006 (308653.010.000) 2026-03-10 16:36:07 Image size of job updated: 1281476
+	1179  -  MemoryUsage of job (MB)
+	1206728  -  ResidentSetSize of job (KB)
+...
+005 (308653.010.000) 2026-03-10 16:36:07 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:26:39, Sys 0 00:00:14  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:26:39, Sys 0 00:00:14  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     1.00        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.11        1         1 "GPU-9ed99095"
+	   GpusMemory (MB)      :   963                       
+	   Memory (MB)          :  1179        2048      2048 
+	   TimeExecute (s)      :  1628                       
+	   TimeSlotBusy (s)     :  1629                       
+...

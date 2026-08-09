@@ -1,0 +1,32 @@
+000 (308658.000.000) 2026-03-11 13:51:35 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308658.000.000) 2026-03-11 13:51:54 Job executing on host: <172.20.45.181:9619?addrs=172.20.45.181-9619&alias=butterfly.astro.gla.ac.uk&noUDP&sock=startd_34_36b7>
+	SlotName: slot1_14@butterfly.astro.gla.ac.uk
+	CondorScratchDir = "/var/lib/condor/execute/dir_43200"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 0
+	Memory = 1024
+...
+006 (308658.000.000) 2026-03-11 13:51:56 Image size of job updated: 76
+	0  -  MemoryUsage of job (MB)
+	0  -  ResidentSetSize of job (KB)
+...
+005 (308658.000.000) 2026-03-11 13:51:56 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :        1     1024      2048 
+	   GPUs                 :                 0         0 
+	   Memory (MB)          :        0     1024      1024 
+	   TimeExecute (s)      :        2                    
+	   TimeSlotBusy (s)     :        2                    
+...

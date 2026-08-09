@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/2665592k/pinns/gather_results.py", line 27, in <module>
+    rows.append([run_id, entry['initial_rho_re'], entry['initial_rho_im'],
+                         ~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'initial_rho_re'
+ERROR conda.cli.main_run:execute(142): `conda run python gather_results.py --mode 2 --delta 0.6 --n_runs 50` failed. (See above for error)

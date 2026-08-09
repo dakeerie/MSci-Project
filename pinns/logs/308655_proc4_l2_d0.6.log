@@ -1,0 +1,47 @@
+000 (308655.004.000) 2026-03-10 18:05:58 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308655.004.000) 2026-03-10 18:06:59 Job executing on host: <130.209.45.56:9619?addrs=130.209.45.56-9619&alias=serenity.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_1@serenity.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_8013366a }
+	CondorScratchDir = "/var/lib/condor/execute/dir_364588"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_8013366a = [ Id = "GPU-8013366a"; ClockMhz = 1695.0; Capability = 8.6; CoresPerCU = 128; DeviceName = "NVIDIA GeForce RTX 3090"; DeviceUuid = "8013366a-fb1c-699c-f34c-39982261207c"; ECCEnabled = false; ComputeUnits = 82; NvidiaDriver = "535.247.01"; DriverVersion = 12.2; DevicePciBusId = "0000:1A:00.0"; GlobalMemoryMb = 24260; MaxSupportedVersion = 12020 ]
+	Memory = 2048
+...
+006 (308655.004.000) 2026-03-10 18:07:07 Image size of job updated: 332968
+	326  -  MemoryUsage of job (MB)
+	332968  -  ResidentSetSize of job (KB)
+...
+006 (308655.004.000) 2026-03-10 18:12:07 Image size of job updated: 803492
+	785  -  MemoryUsage of job (MB)
+	803492  -  ResidentSetSize of job (KB)
+...
+006 (308655.004.000) 2026-03-10 18:17:07 Image size of job updated: 965908
+	944  -  MemoryUsage of job (MB)
+	965908  -  ResidentSetSize of job (KB)
+...
+006 (308655.004.000) 2026-03-10 18:20:19 Image size of job updated: 1052048
+	944  -  MemoryUsage of job (MB)
+	965908  -  ResidentSetSize of job (KB)
+...
+005 (308655.004.000) 2026-03-10 18:20:19 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:13:01, Sys 0 00:00:07  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:13:01, Sys 0 00:00:07  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.22        1         1 "GPU-8013366a"
+	   GpusMemory (MB)      :   822                       
+	   Memory (MB)          :   944        2048      2048 
+	   TimeExecute (s)      :   800                       
+	   TimeSlotBusy (s)     :   801                       
+...

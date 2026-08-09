@@ -1,0 +1,442 @@
+Using device: cuda
+------------------------------
+Starting training for l = 2 with delta = 0.7
+Initial rho: 0.44593 + -1.09830i
+Target rho: -0.17792 + -0.74734i
+Initial distance from target: 0.71580
+------------------------------
+Epoch: 1 / 18000. Total scaled loss: 2.9567e+03, 
+                    ODE(0) loss: 2.5220e+01, 
+                    ODE(1) loss: 2.3957e+00, 
+                    Non-trivial solution loss: 1.9492e+00,
+                    Physics loss: 1.1525e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 500 / 18000. Total scaled loss: 8.7058e+01, 
+                    ODE(0) loss: 3.9828e-03, 
+                    ODE(1) loss: 1.1671e-03, 
+                    Non-trivial solution loss: 8.6538e-01,
+                    Physics loss: 5.4443e-01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 1000 / 18000. Total scaled loss: 9.6076e-01, 
+                    ODE(0) loss: 1.4508e-04, 
+                    ODE(1) loss: 4.0795e-07, 
+                    Non-trivial solution loss: 3.6482e-04,
+                    Physics loss: 9.0973e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 1500 / 18000. Total scaled loss: 8.2549e-01, 
+                    ODE(0) loss: 2.2867e-06, 
+                    ODE(1) loss: 9.2122e-08, 
+                    Non-trivial solution loss: 9.8826e-05,
+                    Physics loss: 8.1537e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 2000 / 18000. Total scaled loss: 7.8448e-01, 
+                    ODE(0) loss: 7.2534e-07, 
+                    ODE(1) loss: 8.4344e-08, 
+                    Non-trivial solution loss: 6.8062e-05,
+                    Physics loss: 7.7759e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 2500 / 18000. Total scaled loss: 7.3394e-01, 
+                    ODE(0) loss: 7.4127e-08, 
+                    ODE(1) loss: 5.5993e-08, 
+                    Non-trivial solution loss: 6.2495e-05,
+                    Physics loss: 7.2767e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 3000 / 18000. Total scaled loss: 7.1002e-01, 
+                    ODE(0) loss: 3.9105e-07, 
+                    ODE(1) loss: 5.6881e-08, 
+                    Non-trivial solution loss: 5.5870e-05,
+                    Physics loss: 7.0438e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 3500 / 18000. Total scaled loss: 6.9004e-01, 
+                    ODE(0) loss: 8.9278e-05, 
+                    ODE(1) loss: 1.1096e-06, 
+                    Non-trivial solution loss: 4.7819e-05,
+                    Physics loss: 6.7622e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 4000 / 18000. Total scaled loss: 6.9393e+00, 
+                    ODE(0) loss: 1.4989e-06, 
+                    ODE(1) loss: 8.1909e-06, 
+                    Non-trivial solution loss: 6.1901e-03,
+                    Physics loss: 4.2370e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 4500 / 18000. Total scaled loss: 7.6721e+00, 
+                    ODE(0) loss: 5.4852e-06, 
+                    ODE(1) loss: 5.6065e-06, 
+                    Non-trivial solution loss: 8.7560e-03,
+                    Physics loss: 3.2461e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 5000 / 18000. Total scaled loss: 9.4096e+00, 
+                    ODE(0) loss: 4.8631e-03, 
+                    ODE(1) loss: 2.3325e-04, 
+                    Non-trivial solution loss: 1.4864e-02,
+                    Physics loss: 2.8240e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 5500 / 18000. Total scaled loss: 1.0797e+01, 
+                    ODE(0) loss: 3.2329e-05, 
+                    ODE(1) loss: 2.6123e-06, 
+                    Non-trivial solution loss: 1.9955e-02,
+                    Physics loss: 2.7484e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 6000 / 18000. Total scaled loss: 1.1923e+01, 
+                    ODE(0) loss: 1.7719e-03, 
+                    ODE(1) loss: 8.0780e-05, 
+                    Non-trivial solution loss: 2.9973e-02,
+                    Physics loss: 2.4245e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 6500 / 18000. Total scaled loss: 1.3303e+01, 
+                    ODE(0) loss: 2.4177e-03, 
+                    ODE(1) loss: 5.4511e-05, 
+                    Non-trivial solution loss: 4.2590e-02,
+                    Physics loss: 2.2558e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 7000 / 18000. Total scaled loss: 1.4094e+01, 
+                    ODE(0) loss: 2.6953e-05, 
+                    ODE(1) loss: 3.8634e-06, 
+                    Non-trivial solution loss: 6.0687e-02,
+                    Physics loss: 2.0199e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 7500 / 18000. Total scaled loss: 1.5050e+01, 
+                    ODE(0) loss: 9.0371e-03, 
+                    ODE(1) loss: 2.5285e-04, 
+                    Non-trivial solution loss: 8.2342e-02,
+                    Physics loss: 1.7625e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 8000 / 18000. Total scaled loss: 1.5153e+01, 
+                    ODE(0) loss: 9.3702e-05, 
+                    ODE(1) loss: 7.5927e-06, 
+                    Non-trivial solution loss: 1.1205e-01,
+                    Physics loss: 1.5549e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 8500 / 18000. Total scaled loss: 1.5237e+01, 
+                    ODE(0) loss: 7.1146e-05, 
+                    ODE(1) loss: 2.1764e-05, 
+                    Non-trivial solution loss: 1.5254e-01,
+                    Physics loss: 1.3083e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 9000 / 18000. Total scaled loss: 1.4818e+01, 
+                    ODE(0) loss: 3.5406e-03, 
+                    ODE(1) loss: 1.3012e-04, 
+                    Non-trivial solution loss: 2.0096e-01,
+                    Physics loss: 1.0538e+01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.44593 + -1.09830i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Unfreezing rho...
+Epoch: 9500 / 18000. Total scaled loss: 1.2436e+01, 
+                    ODE(0) loss: 2.2264e-06, 
+                    ODE(1) loss: 3.5810e-06, 
+                    Non-trivial solution loss: 2.2432e-01,
+                    Physics loss: 7.8152e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.39809 + -1.05714i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 10000 / 18000. Total scaled loss: 1.0151e+01, 
+                    ODE(0) loss: 1.3526e-05, 
+                    ODE(1) loss: 2.3330e-06, 
+                    Non-trivial solution loss: 2.5690e-01,
+                    Physics loss: 5.5673e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.35333 + -1.01467i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 10500 / 18000. Total scaled loss: 7.9322e+00, 
+                    ODE(0) loss: 3.3251e-05, 
+                    ODE(1) loss: 2.3961e-06, 
+                    Non-trivial solution loss: 3.2190e-01,
+                    Physics loss: 3.6384e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.31379 + -0.97721i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 11000 / 18000. Total scaled loss: 6.1972e+00, 
+                    ODE(0) loss: 1.8723e-05, 
+                    ODE(1) loss: 6.7976e-06, 
+                    Non-trivial solution loss: 3.8113e-01,
+                    Physics loss: 2.3856e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.28210 + -0.94753i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 11500 / 18000. Total scaled loss: 5.6601e+00, 
+                    ODE(0) loss: 8.9867e-06, 
+                    ODE(1) loss: 1.1637e-05, 
+                    Non-trivial solution loss: 3.1989e-01,
+                    Physics loss: 2.4610e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.24526 + -0.91352i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 12000 / 18000. Total scaled loss: 4.8452e+00, 
+                    ODE(0) loss: 2.3081e-05, 
+                    ODE(1) loss: 2.2596e-05, 
+                    Non-trivial solution loss: 2.4458e-01,
+                    Physics loss: 2.3989e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.19859 + -0.87253i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 12500 / 18000. Total scaled loss: 4.0055e+00, 
+                    ODE(0) loss: 2.7277e-05, 
+                    ODE(1) loss: 9.9190e-06, 
+                    Non-trivial solution loss: 1.5914e-01,
+                    Physics loss: 2.4137e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.14402 + -0.82826i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 13000 / 18000. Total scaled loss: 2.9528e+00, 
+                    ODE(0) loss: 3.3657e-05, 
+                    ODE(1) loss: 2.5122e-05, 
+                    Non-trivial solution loss: 8.4932e-02,
+                    Physics loss: 2.1028e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.08610 + -0.78631i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 13500 / 18000. Total scaled loss: 1.9362e+00, 
+                    ODE(0) loss: 9.1432e-06, 
+                    ODE(1) loss: 7.5882e-06, 
+                    Non-trivial solution loss: 3.7630e-02,
+                    Physics loss: 1.5597e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: 0.03041 + -0.75361i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 14000 / 18000. Total scaled loss: 1.1479e+00, 
+                    ODE(0) loss: 3.3868e-05, 
+                    ODE(1) loss: 1.8087e-05, 
+                    Non-trivial solution loss: 1.3608e-02,
+                    Physics loss: 1.0113e+00,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.01970 + -0.73719i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 14500 / 18000. Total scaled loss: 6.6572e-01, 
+                    ODE(0) loss: 1.8678e-05, 
+                    ODE(1) loss: 6.6280e-05, 
+                    Non-trivial solution loss: 4.6902e-03,
+                    Physics loss: 5.5673e-01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.06256 + -0.73601i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 15000 / 18000. Total scaled loss: 3.5676e-01, 
+                    ODE(0) loss: 7.6352e-05, 
+                    ODE(1) loss: 6.9688e-05, 
+                    Non-trivial solution loss: 1.5328e-03,
+                    Physics loss: 2.0412e-01,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.10420 + -0.74236i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 15500 / 18000. Total scaled loss: 1.2273e-01, 
+                    ODE(0) loss: 1.3830e-05, 
+                    ODE(1) loss: 9.7343e-05, 
+                    Non-trivial solution loss: 1.5686e-04,
+                    Physics loss: 5.4048e-02,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.13698 + -0.74625i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 16000 / 18000. Total scaled loss: 4.2569e-02, 
+                    ODE(0) loss: 1.3449e-04, 
+                    ODE(1) loss: 9.0933e-04, 
+                    Non-trivial solution loss: 6.9080e-06,
+                    Physics loss: 1.1547e-02,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.15734 + -0.74736i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 16500 / 18000. Total scaled loss: 9.3682e-03, 
+                    ODE(0) loss: 1.3220e-06, 
+                    ODE(1) loss: 4.6974e-05, 
+                    Non-trivial solution loss: 1.5419e-06,
+                    Physics loss: 2.6618e-03,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.16775 + -0.74734i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 17000 / 18000. Total scaled loss: 1.5847e-02, 
+                    ODE(0) loss: 2.5474e-04, 
+                    ODE(1) loss: 8.9939e-04, 
+                    Non-trivial solution loss: 1.0460e-05,
+                    Physics loss: 1.0807e-03,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17244 + -0.74704i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 17500 / 18000. Total scaled loss: 2.7947e-03, 
+                    ODE(0) loss: 4.1358e-07, 
+                    ODE(1) loss: 5.3606e-07, 
+                    Non-trivial solution loss: 6.1295e-07,
+                    Physics loss: 6.2545e-04,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17455 + -0.74678i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Epoch: 18000 / 18000. Total scaled loss: 3.0074e-03, 
+                    ODE(0) loss: 2.2902e-05, 
+                    ODE(1) loss: 5.5892e-05, 
+                    Non-trivial solution loss: 2.2986e-06,
+                    Physics loss: 4.3939e-04,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17556 + -0.74667i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Adam training complete. Switching to L-BFGS:
+L-BFGS Epoch: 100 / 1000. Total scaled loss: 3.0609e-06, 
+                    ODE(0) loss: 1.1783e-10, 
+                    ODE(1) loss: 9.8453e-11, 
+                    Non-trivial solution loss: 1.3492e-12,
+                    Physics loss: 3.0587e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 200 / 1000. Total scaled loss: 2.9954e-06, 
+                    ODE(0) loss: 1.3516e-10, 
+                    ODE(1) loss: 1.4535e-10, 
+                    Non-trivial solution loss: 4.7701e-13,
+                    Physics loss: 2.9925e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 300 / 1000. Total scaled loss: 3.0307e-06, 
+                    ODE(0) loss: 1.3499e-10, 
+                    ODE(1) loss: 1.5167e-10, 
+                    Non-trivial solution loss: 3.1003e-13,
+                    Physics loss: 3.0278e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 400 / 1000. Total scaled loss: 3.1154e-06, 
+                    ODE(0) loss: 1.5302e-10, 
+                    ODE(1) loss: 1.2778e-10, 
+                    Non-trivial solution loss: 2.4875e-13,
+                    Physics loss: 3.1126e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 500 / 1000. Total scaled loss: 3.0670e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0643e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 600 / 1000. Total scaled loss: 3.0505e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0478e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 700 / 1000. Total scaled loss: 3.0322e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0294e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 800 / 1000. Total scaled loss: 3.0625e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0597e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 900 / 1000. Total scaled loss: 3.0987e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0960e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+L-BFGS Epoch: 1000 / 1000. Total scaled loss: 3.0748e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0720e-06,
+                    Initial value of rho: 0.44593 + -1.09830i,
+                    Current value of rho: -0.17800 + -0.74739i,
+                    Target rho: -0.17792 + -0.74734
+------------------------------
+Training complete for l = 2. Total scaled loss: 3.0748e-06, 
+                    ODE(0) loss: 1.5252e-10, 
+                    ODE(1) loss: 1.2416e-10, 
+                    Non-trivial solution loss: 2.2760e-13,
+                    Physics loss: 3.0720e-06,
+                    Current value of rho: -0.17800 + -0.74739i
+                    Target rho: -0.17792 + -0.74734
+Result saved to ./RepeatRunQNM/l2/delta0.7/5/result.txt
+Training complete. Checkpoint saved to ./RepeatRunQNM/l2/delta0.7/5/pinn_checkpoint_qnm_l2_delta0.7_run5.pth
+l = 2 mode with delta = 0.7 completed successfully.

@@ -1,0 +1,19 @@
+universe = vanilla
+log    = logs/$(Cluster)_proc$(Process)_l$(l_mode)_d$(qnm_delta).log
+error  = logs/$(Cluster)_proc$(Process)_l$(l_mode)_d$(qnm_delta).err
+output = logs/$(Cluster)_proc$(Process)_l$(l_mode)_d$(qnm_delta).out
+
+executable = /cvmfs/software.igwn.org/conda/condabin/conda
+arguments = run -n pinns python RRQNMPINN.py --mode $(l_mode) --delta $(qnm_delta) --run_id $(Process)
+
+# Resource requirements
+request_cpus = 1
+request_memory = 2GB
+request_gpus = 1
+
+notification = Never
+notify_user = 2665592k@student.gla.ac.uk
+
+stream_output = true
+
+queue 50 l_mode, qnm_delta from (2 0.6)

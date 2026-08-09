@@ -1,0 +1,39 @@
+000 (308657.045.000) 2026-03-11 11:51:19 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308657.045.000) 2026-03-11 13:09:50 Job executing on host: <130.209.45.171:9619?addrs=130.209.45.171-9619&alias=puck.astro.gla.ac.uk&noUDP&sock=startd_73_f6e8>
+	SlotName: slot1_1@puck.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_6deab5cf }
+	CondorScratchDir = "/var/lib/condor/execute/dir_309455"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_6deab5cf = [ Id = "GPU-6deab5cf"; ClockMhz = 2655.0; Capability = 12.0; CoresPerCU = 128; DeviceName = "NVIDIA GeForce RTX 5090"; DeviceUuid = "6deab5cf-f3f8-078d-fee6-a01e4b21ea0e"; ECCEnabled = false; ComputeUnits = 170; NvidiaDriver = "590.48.01"; DriverVersion = 13.1; DevicePciBusId = "0000:21:00.0"; GlobalMemoryMb = 32104; MaxSupportedVersion = 13010 ]
+	Memory = 2048
+...
+006 (308657.045.000) 2026-03-11 13:09:59 Image size of job updated: 977196
+	955  -  MemoryUsage of job (MB)
+	977196  -  ResidentSetSize of job (KB)
+...
+006 (308657.045.000) 2026-03-11 13:13:58 Image size of job updated: 1315748
+	955  -  MemoryUsage of job (MB)
+	977196  -  ResidentSetSize of job (KB)
+...
+005 (308657.045.000) 2026-03-11 13:13:58 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:03:54, Sys 0 00:00:01  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:03:54, Sys 0 00:00:01  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.33        1         1 "GPU-6deab5cf"
+	   GpusMemory (MB)      :  1319                       
+	   Memory (MB)          :   955        2048      2048 
+	   TimeExecute (s)      :   248                       
+	   TimeSlotBusy (s)     :   248                       
+...

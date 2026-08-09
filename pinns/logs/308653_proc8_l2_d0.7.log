@@ -1,0 +1,43 @@
+000 (308653.008.000) 2026-03-10 15:43:57 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308653.008.000) 2026-03-10 15:58:53 Job executing on host: <130.209.45.226:9619?addrs=130.209.45.226-9619&alias=muck.astro.gla.ac.uk&noUDP&sock=startd_79_147a>
+	SlotName: slot1_4@muck.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_65408344 }
+	CondorScratchDir = "/var/lib/condor/execute/dir_197610"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_65408344 = [ Id = "GPU-65408344"; ClockMhz = 1785.0; Capability = 8.6; CoresPerCU = 128; DeviceName = "NVIDIA GeForce RTX 3090"; DeviceUuid = "65408344-a5d4-fcd7-1df1-b57c67d81168"; ECCEnabled = false; ComputeUnits = 82; NvidiaDriver = "590.48.01"; DriverVersion = 13.1; DevicePciBusId = "0000:08:00.0"; GlobalMemoryMb = 24117; MaxSupportedVersion = 13010 ]
+	Memory = 2048
+...
+006 (308653.008.000) 2026-03-10 15:59:02 Image size of job updated: 423796
+	414  -  MemoryUsage of job (MB)
+	423796  -  ResidentSetSize of job (KB)
+...
+006 (308653.008.000) 2026-03-10 16:04:02 Image size of job updated: 1027776
+	1004  -  MemoryUsage of job (MB)
+	1027776  -  ResidentSetSize of job (KB)
+...
+006 (308653.008.000) 2026-03-10 16:06:18 Image size of job updated: 1100544
+	1004  -  MemoryUsage of job (MB)
+	1027776  -  ResidentSetSize of job (KB)
+...
+005 (308653.008.000) 2026-03-10 16:06:18 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:07:07, Sys 0 00:00:05  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:07:07, Sys 0 00:00:05  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     1.00        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.35        1         1 "GPU-65408344"
+	   GpusMemory (MB)      :   976                       
+	   Memory (MB)          :  1004        2048      2048 
+	   TimeExecute (s)      :   445                       
+	   TimeSlotBusy (s)     :   445                       
+...

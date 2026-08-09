@@ -1,0 +1,47 @@
+000 (308340.024.000) 2026-03-03 11:31:17 Job submitted from host: <130.209.45.81:9618?addrs=130.209.45.81-9618&alias=wiay.astro.gla.ac.uk&noUDP&sock=schedd_8023_b06c>
+...
+001 (308340.024.000) 2026-03-03 12:00:15 Job executing on host: <130.209.45.81:9619?addrs=130.209.45.81-9619&alias=wiay.astro.gla.ac.uk&noUDP&sock=startd_35_e64f>
+	SlotName: slot1_3@wiay.astro.gla.ac.uk
+	AvailableGPUs = { GPUs_GPU_ccce0a6d }
+	CondorScratchDir = "/var/lib/condor/execute/dir_380542"
+	Cpus = 1
+	Disk = 2048
+	GPUs = 1
+	GPUs_GPU_ccce0a6d = [ Id = "GPU-ccce0a6d"; ClockMhz = 1545.0; Capability = 7.5; CoresPerCU = 64; DeviceName = "NVIDIA GeForce RTX 2080 Ti"; DeviceUuid = "ccce0a6d-fcb7-3017-31fe-49f0f1089b6b"; ECCEnabled = false; ComputeUnits = 68; NvidiaDriver = "555.42.06"; DriverVersion = 12.5; DevicePciBusId = "0000:B1:00.0"; GlobalMemoryMb = 10827; MaxSupportedVersion = 12050 ]
+	Memory = 2048
+...
+006 (308340.024.000) 2026-03-03 12:00:23 Image size of job updated: 730868
+	714  -  MemoryUsage of job (MB)
+	730868  -  ResidentSetSize of job (KB)
+...
+006 (308340.024.000) 2026-03-03 12:05:23 Image size of job updated: 807732
+	789  -  MemoryUsage of job (MB)
+	807732  -  ResidentSetSize of job (KB)
+...
+006 (308340.024.000) 2026-03-03 12:10:23 Image size of job updated: 960616
+	939  -  MemoryUsage of job (MB)
+	960616  -  ResidentSetSize of job (KB)
+...
+006 (308340.024.000) 2026-03-03 12:15:24 Image size of job updated: 1060744
+	1036  -  MemoryUsage of job (MB)
+	1060744  -  ResidentSetSize of job (KB)
+...
+005 (308340.024.000) 2026-03-03 12:15:51 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:15:13, Sys 0 00:00:11  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:15:13, Sys 0 00:00:11  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :     1        1024      2048 
+	   GPUs                 :     0.29        1         1 "GPU-ccce0a6d"
+	   GpusMemory (MB)      :  1054                       
+	   Memory (MB)          :  1036        2048      2048 
+	   TimeExecute (s)      :   936                       
+	   TimeSlotBusy (s)     :   936                       
+...
