@@ -122,30 +122,30 @@ def reciprocal_z(z):
     conjugate = complex(z_re, -z_im)
     return conjugate/mod_sq_z
 
-#ANNEALING NEEDS WORK
 def annealing(epoch, total_epochs):
-    if epoch <= 0.2*total_epochs:
+    if epoch <= 0.1*total_epochs:
         BC = 100.0
         AMPLITUDE = 100.0
-        UMAX = 0.01
-        UMAX_DERIV = 0.01
-        ODE = 0.01
-        WRON = 1.0
+        UMAX = 10.0
+        UMAX_DERIV = 10.0
+        ODE = 0.1
+        WRON = 0.1
 
-    elif 0.2*total_epochs < epoch < 0.6*total_epochs:
-        BC = (10.0 - 100.0)/(0.6 - 0.2)*(epoch/total_epochs) + 145
-        NT = (10.0 - 100.0)/(0.6 - 0.2)*(epoch/total_epochs) + 145
-        ODE = (1.0 - 0.1)/(0.6 - 0.2)*(epoch/total_epochs) - 0.35
-    
-    elif 0.6*total_epochs <= epoch < 0.8*total_epochs:
-        BC = 10.0
-        NT = 10.0
-        ODE = 1.0
+    elif 0.1*total_epochs < epoch < 0.6*total_epochs:
+        BC = 100.0
+        AMPLITUDE = 100.0
+        UMAX = (50.0 - 10.0)/(0.6 - 0.1)*(epoch/total_epochs) + 2
+        UMAX_DERIV = (50.0 - 10.0)/(0.6 - 0.1)*(epoch/total_epochs) + 2
+        ODE = (10.0 - 0.1)/(0.6 - 0.1)*(epoch/total_epochs) - 1.88
+        WRON = 0.1
 
-    elif epoch >= 0.8*total_epochs:
-        BC = 10.0
-        NT = 10.0
-        ODE = (5.0 - 1.0)/(1.0 - 0.8)*(epoch/total_epochs) - 15
+    elif epoch >= 0.6*total_epochs:
+        BC = 100.0
+        AMPLITUDE = 100.0
+        UMAX = 50.0
+        UMAX_DERIV = 50.0
+        ODE = 10
+        WRON = (100.0 - 0.1)/(1.0 - 0.6)*(epoch/total_epochs) - 149.75
     
     return [BC, AMPLITUDE, UMAX, UMAX_DERIV, ODE, WRON]
 
@@ -269,7 +269,7 @@ for epoch in range(Adam_iterations):
     x_tensor = t.cat([x_uniform, x_edges], dim = 0)
     x_tensor.requires_grad_(True)
 
-    if epoch == int(0.5*Adam_iterations):
+    if epoch == int(0.1*Adam_iterations):
         print("Unfreezing coefficients...")
         model.alpha_re.requires_grad = True
         model.alpha_im.requires_grad = True
