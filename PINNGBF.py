@@ -112,7 +112,9 @@ def A(x):
     return A
 
 def B(x, M, omega):
-    return (1 - x)*(1 - 3*x) - 4*M*j*omega
+    real = (1 - x) * (1 - 3*x)
+    imag = -4 * M * omega * t.ones_like(x)
+    return t.complex(real, imag)
         
 def C(x, l):
     return l*(l  + 1) - 3*(1 - x)
@@ -173,12 +175,12 @@ def compute_loss(model, x_tensor, weights, mass, mode, omega):
     B_h_re, B_h_im = B_h.real, B_h.imag
     C_h = C(x_horizon, mode)
 
-    #Robin Boundary Condition
+    #Robin boundary condition
     loss_horizon_re = B_h_re*du_h_re - B_h_im*du_h_im + C_h*u_h_re
     loss_horizon_im = B_h_im*du_h_re + B_h_re*du_h_im + C_h*u_h_im
     loss_horizon = t.mean(loss_horizon_re**2 + loss_horizon_im**2)
 
-    #Incident wave asymptotic amplitude
+    #Horizon amplitude normalisation
     loss_amplitude = t.mean((1.0 - u_h_re)**2 + (0.0 - u_h_im)**2)
 
     #x_max BC loss terms
