@@ -48,6 +48,7 @@ base_path = f'./Output/l{mode}/omega{omega}'
 
 out_dir = os.path.join(base_path, 'NNOutput')
 loss_dir = os.path.join(base_path, 'Loss')
+os.makedirs(base_path, exist_ok=True)
 os.makedirs(out_dir, exist_ok = True)
 os.makedirs(loss_dir, exist_ok = True)
 
