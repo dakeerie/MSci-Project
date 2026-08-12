@@ -12,21 +12,26 @@ from matplotlib import rc
 
 plt.rcParams.update({
     "font.family": "serif",
-    "font.serif": ["Computer Modern Roman"],
-    "mathtext.fontset": "cm",
+    "font.serif": ["STIXGeneral"],
+    "mathtext.fontset": "stix",
     "text.usetex": False
 })
 
 j = complex(0, 1)
+DTYPE = t.float32
+NP_DTYPE = np.float32 if DTYPE == t.float32 else np.float64
 
-parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
-parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
-parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
+# parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
+# parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
+# parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
 # parser.add_argument('--delta', type = float, default = 0.1, help = 'Range of random perturbation away from true QNM')
 
-args = parser.parse_args()
-mode = args.mode
-omega = args.omega
+# args = parser.parse_args()
+# mode = args.mode
+# omega = args.omega
+
+mode = 2
+omega = 0.3
 mass = 0.5
 x_max = 0.95
 rstar_max = r_to_rstar(x_to_r(x_max, mass), mass)
@@ -53,6 +58,7 @@ os.makedirs(out_dir, exist_ok = True)
 os.makedirs(loss_dir, exist_ok = True)
 
 device = t.device('cuda' if t.cuda.is_available() else 'cpu')
+rstar_max_tensor = t.tensor(rstar_max, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1)
 print(f"Using device: {device}")
 
 #PINN architecture
@@ -95,8 +101,7 @@ class Model(nn.Module):
         return x 
 
 #Set up
-DTYPE = t.float32
-NP_DTYPE = np.float32 if DTYPE == t.float32 else np.float64
+
 
 #Define functions
 def grads(y, x):
@@ -191,17 +196,17 @@ def compute_loss(model, x_tensor, weights, mass, mode, omega):
     du_max_im = first_grad(u_max_im, x_max_tensor)
 
     #u boundary term: (u_NN - u_analytical)|_x_max
-    boundary_real = u_max_re - (model.alpha_re + model.beta_re*t.cos(2*omega*rstar_max)
-                        - model.beta_im*t.sin(2*omega*rstar_max))
-    boundary_imag = u_max_im - (model.alpha_im + model.beta_im*t.cos(2*omega*rstar_max)
-                        + model.beta_re*t.sin(2*omega*rstar_max))
+    boundary_real = u_max_re - (model.alpha_re + model.beta_re*t.cos(2*omega*rstar_max_tensor)
+                        - model.beta_im*t.sin(2*omega*rstar_max_tensor))
+    boundary_imag = u_max_im - (model.alpha_im + model.beta_im*t.cos(2*omega*rstar_max_tensor)
+                        + model.beta_re*t.sin(2*omega*rstar_max_tensor))
     loss_u_max = t.mean(boundary_real**2 + boundary_imag**2)
 
     #u derivative boundary term: (u'_NN - u'_analytical)|_x_max
-    deriv_boundary_real = du_max_re + 2*omega*(model.beta_im*t.cos(2*omega*rstar_max) 
-                                        + model.beta_re*t.sin(2*omega*rstar_max))/g(x_max, mass)
-    deriv_boundary_imag = du_max_im - 2*omega*(model.beta_re*t.cos(2*omega*rstar_max)
-                                        - model.beta_im*t.sin(2*omega*rstar_max))/g(x_max, mass)
+    deriv_boundary_real = du_max_re + 2*omega*(model.beta_im*t.cos(2*omega*rstar_max_tensor) 
+                                        + model.beta_re*t.sin(2*omega*rstar_max_tensor))/g(x_max, mass)
+    deriv_boundary_imag = du_max_im - 2*omega*(model.beta_re*t.cos(2*omega*rstar_max_tensor)
+                                        - model.beta_im*t.sin(2*omega*rstar_max_tensor))/g(x_max, mass)
     loss_deriv_u_max = t.mean(deriv_boundary_real**2 + deriv_boundary_imag**2)
 
     #Physics loss
@@ -319,7 +324,9 @@ for epoch in range(Adam_iterations):
                     Current value of alpha: {model.alpha_re.item():.5f} + {model.alpha_im.item():.5f}i,
                     Current value of beta: {model.beta_re.item():.5f} + {model.beta_im.item():.5f}i,
                     Current value of T: {T.real:.5f} + {T.imag:.5f}i,
+                    Current value of |T|^2: {np.abs(T)**2:.5f},
                     Current value of R: {R.real:.5f} + {R.imag:.5f}i,
+                    Current value of |R|^2: {np.abs(R)**2:.5f}
                     Current value of |T|^2 + |R|^2: {wronskian:.5f} .
                     """)
         print("-"*30)
@@ -341,7 +348,7 @@ for epoch in range(Adam_iterations):
         plt.xlabel('x', fontsize = 25)
         plt.ylabel('Output', fontsize = 25)
         plt.grid()
-        plt.legend(fontsize = 25)
+        plt.legend(fontsize = 15, loc = 'best')
         plt.tight_layout()
         plt.savefig(f'{out_dir}/Output_Epoch_{epoch + 1}.png', format = 'png')
         plt.close()
@@ -357,7 +364,7 @@ for epoch in range(Adam_iterations):
         plt.yscale('log')
         plt.ylabel('Loss', fontsize = 25)
         plt.xlabel('Epoch', fontsize = 25)
-        plt.legend(fontsize = 25)
+        plt.legend(fontsize = 15, loc = 'best')
         plt.grid()
         plt.tight_layout()
         plt.savefig(f'{loss_dir}/Loss_Epoch_{epoch + 1}.png', format = 'png')
@@ -435,26 +442,13 @@ for epoch in range(lbfgs_iterations):
                     Current value of alpha: {model.alpha_re.item():.5f} + {model.alpha_im.item():.5f}i,
                     Current value of beta: {model.beta_re.item():.5f} + {model.beta_im.item():.5f}i,
                     Current value of T: {T.real:.5f} + {T.imag:.5f}i,
+                    Current value of |T|^2: {np.abs(T)**2:.5f},
                     Current value of R: {R.real:.5f} + {R.imag:.5f}i,
+                    Current value of |R|^2: {np.abs(R)**2:.5f},
                     Current value of |T|^2 + |R|^2: {wronskian:.5f} .
                     """)
         print("-"*30)
-
-
-    if epoch == (lbfgs_iterations - 1):
-        print(f"""Training complete for l = {mode} with omega = {omega}. Total scaled loss: {info['total']:.4e}, 
-                    ODE(0) loss: {info['h']:.4e}, 
-                    Amplitude loss: {info['amp']:.4e}, 
-                    u(x_max) loss: {info['umax']:.4e},
-                    u'(x_max) loss: {info['umaxderiv']:.4e},
-                    Physics loss: {info['ode']:.4e},
-                    Wronskian loss: {info['wronskian']:.4e},
-                    Current value of alpha: {model.alpha_re.item():.5f} + {model.alpha_im.item():.5f}i,
-                    Current value of beta: {model.beta_re.item():.5f} + {model.beta_im.item():.5f}i,
-                    Current value of T: {T.real:.5f} + {T.imag:.5f}i,
-                    Current value of R: {R.real:.5f} + {R.imag:.5f}i,
-                    Current value of |T|^2 + |R|^2: {wronskian:.5f} .
-                    """)
+        
 
     if (epoch + 1) % 100 == 0 or epoch == (lbfgs_iterations - 1):
         x_plot = plot_data['x'].flatten()
@@ -468,7 +462,7 @@ for epoch in range(lbfgs_iterations):
         plt.xlabel('x', fontsize = 25)
         plt.ylabel('Residual', fontsize = 25)
         plt.grid()
-        plt.legend(fontsize = 25)
+        plt.legend(fontsize = 25, loc = 'best')
         plt.tight_layout()
         plt.savefig(f'{out_dir}/Output_Epoch_{epoch + 1 + Adam_iterations}.png', format = 'png')
         plt.close()
@@ -484,7 +478,7 @@ for epoch in range(lbfgs_iterations):
         plt.yscale('log')
         plt.ylabel('Loss', fontsize = 25)
         plt.xlabel('Epoch', fontsize = 25)
-        plt.legend(fontsize = 25)
+        plt.legend(fontsize = 15, loc = 'best')
         plt.grid()
         plt.tight_layout()
         plt.savefig(f'{loss_dir}/Loss_Epoch_{epoch + 1 + Adam_iterations}.png', format = 'png')
@@ -534,3 +528,20 @@ checkpoint_path = os.path.join(base_path,f'pinn_checkpoint_qnm_l{mode}_omega{ome
 t.save(results, checkpoint_path)
 print(f'Training complete. Checkpoint saved to {checkpoint_path}')
 print(f"l = {mode} mode with omega = {omega} completed successfully.")
+print(f"""Final values:
+                    Total scaled loss: {info['total']:.4e}, 
+                    ODE(0) loss: {info['h']:.4e}, 
+                    Amplitude loss: {info['amp']:.4e}, 
+                    u(x_max) loss: {info['umax']:.4e},
+                    u'(x_max) loss: {info['umaxderiv']:.4e},
+                    Physics loss: {info['ode']:.4e},
+                    Wronskian loss: {info['wronskian']:.4e},
+                    Final value of alpha: {model.alpha_re.item():.5f} + {model.alpha_im.item():.5f}i,
+                    Final value of beta: {model.beta_re.item():.5f} + {model.beta_im.item():.5f}i,
+                    Final value of T: {T.real:.5f} + {T.imag:.5f}i,
+                    Final value of |T|^2: {np.abs(T)**2:.5f}
+                    Final value of R: {R.real:.5f} + {R.imag:.5f}i,
+                    Final value of |R|^2: {np.abs(R)**2:.5f},
+                    Final value of |T|^2 + |R|^2: {wronskian:.5f}.
+                    The grey body factor for l = {mode}, omega = {omega} is {np.abs(T)**2:.5f}
+                    """)
