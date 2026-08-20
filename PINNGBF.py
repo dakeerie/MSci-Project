@@ -1,3 +1,4 @@
+import time 
 import torch as t
 import numpy as np 
 import matplotlib.pyplot as plt
@@ -9,6 +10,8 @@ import os
 import argparse
 from Functions import *
 from matplotlib import rc
+
+start_time = time.time()
 
 plt.rcParams.update({
     "font.family": "serif",
@@ -30,13 +33,15 @@ NP_DTYPE = np.float32 if DTYPE == t.float32 else np.float64
 # mode = args.mode
 # omega = args.omega
 
-mode = 2
-omega = 0.3
-mass = 0.5
+mode = 3
+omega = 0.05
+mass = 4
 x_max = 0.95
 rstar_max = r_to_rstar(x_to_r(x_max, mass), mass)
 alpha_init = complex(1, 0)
 beta_init = complex(0, 1)
+
+
 
 # omega_dict = {
 #     2: complex(0.74734, -0.17792),
@@ -526,7 +531,7 @@ results = {
 
 checkpoint_path = os.path.join(base_path,f'pinn_checkpoint_qnm_l{mode}_omega{omega}.pth') 
 t.save(results, checkpoint_path)
-print(f'Training complete. Checkpoint saved to {checkpoint_path}')
+print(f'Training completed in {((time.time() - start_time)/3600):4f} hours. Checkpoint saved to {checkpoint_path}')
 print(f"l = {mode} mode with omega = {omega} completed successfully.")
 print(f"""Final values:
                     Total scaled loss: {info['total']:.4e}, 
