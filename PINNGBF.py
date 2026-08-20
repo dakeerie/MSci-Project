@@ -21,35 +21,24 @@ j = complex(0, 1)
 DTYPE = t.float32
 NP_DTYPE = np.float32 if DTYPE == t.float32 else np.float64
 
-# parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
-# parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
-# parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
-# parser.add_argument('--delta', type = float, default = 0.1, help = 'Range of random perturbation away from true QNM')
+parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
+parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
+parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
+parser.add_argument('--delta', type = float, default = 0.1, help = 'Range of random perturbation away from true QNM')
 
-# args = parser.parse_args()
-# mode = args.mode
-# omega = args.omega
+args = parser.parse_args()
+mode = args.mode
+omega = args.omega
 
-mode = 2
-omega = 0.3
+# mode = 2
+# omega = 0.3
 mass = 0.5
 x_max = 0.95
 rstar_max = r_to_rstar(x_to_r(x_max, mass), mass)
 alpha_init = complex(1, 0)
 beta_init = complex(0, 1)
 
-# omega_dict = {
-#     2: complex(0.74734, -0.17792),
-#     3: complex(1.19889, -0.18541),
-#     4: complex(1.61835, -0.18832),
-#     5: complex(2.02458, -0.18974),
-#     6: complex(2.42402, -0.19053)
-# }
-
-# if mode not in omega_dict:
-#     raise ValueError(f"Mode l={mode} is not supported. Choose from {list(omega_dict.keys())}.")
-
-base_path = f'./Output/l{mode}/omega{omega}'
+base_path = f'./GBFData/l{mode}/omega{omega}'
 
 out_dir = os.path.join(base_path, 'NNOutput')
 loss_dir = os.path.join(base_path, 'Loss')
@@ -232,16 +221,9 @@ def compute_loss(model, x_tensor, weights, mass, mode, omega):
     
     return u_nn_re, u_nn_im, total_loss, loss_horizon, loss_amplitude, loss_u_max, loss_deriv_u_max, loss_ode, loss_ode_re, loss_ode_im, loss_wronskian
 
-# omega = omega_dict[mode]
-# rho = -1j*omega
-# rho_perturbed = rho + complex(np.random.uniform(-delta, delta), np.random.uniform(-delta, delta))
 
 print('-'*30)
 print(f'Starting training for l = {mode} with omega = {omega}')
-# initial_dist = np.abs(rho_perturbed - rho)
-# print(f"Initial rho: {rho_perturbed.real:.5f} + {rho_perturbed.imag:.5f}i")
-# print(f"Target rho: {rho.real:.5f} + {rho.imag:.5f}i")
-# print(f"Initial distance from target: {initial_dist:.5f}")
 print('-'*30)
 
 loss_h = []
@@ -524,8 +506,30 @@ results = {
     'final_beta': [model.beta_re.item(), model.beta_im.item()]
     }
 
-checkpoint_path = os.path.join(base_path,f'pinn_checkpoint_qnm_l{mode}_omega{omega}.pth') 
+checkpoint_path = os.path.join(base_path, f'pinn_checkpoint_qnm_l{mode}_omega{omega}.pth') 
 t.save(results, checkpoint_path)
+
+final_alpha = complex(model.alpha_re.item(), model.alpha_im.item())
+final_beta = complex(model.beta_re.item(), model.beta_im.item())
+T = reciprocal_z(final_alpha)
+R = final_beta*T
+gbf = float(np.abs(T)**2)
+wronskian = np.abs(T)**2 + np.abs(R)**2
+
+result_file_path = os.path.join(base_path, 'result.txt')
+with open(result_file_path, 'w') as f:
+    f.write(f"alpha_re = {final_alpha.real:.10f}\n")
+    f.write(f"alpha_im = {final_alpha.imag:.10f}\n")
+    f.write(f"beta_re = {final_beta.real:.10f}\n")
+    f.write(f"beta_im = {final_beta.imag:.10f}\n")
+    f.write(f"T_re = {T.real:.10f}\n")
+    f.write(f"T_im = {T.imag:.10f}\n")
+    f.write(f"R_re = {R.real:.10f}\n")
+    f.write(f"R_im = {R.imag:.10f}\n")
+    f.write(f"Wronskian = {wronskian:.10f}\n")
+    f.write(f"GBF = {gbf:.10e}\n")
+
+
 print(f'Training complete. Checkpoint saved to {checkpoint_path}')
 print(f"l = {mode} mode with omega = {omega} completed successfully.")
 print(f"""Final values:
