@@ -85,7 +85,7 @@ for mode in modes:
         Omega = 4*mass*om
 
         a1 = -1j*L/Omega
-        a2 = ((L - 2)*a1 + 3)/(1j*Omega*2.0)
+        a2 = (-L*(L - 2) +1j*3*Omega)/(2*Omega**2)
 
         u1 = 1.0 + a1*y + a2*y**2
         du1_dx = -(a1 + 2.0*a2*y)
@@ -107,7 +107,7 @@ x_last, u_last, du_last = solutions[mode_last][omega_last]
 plt.figure(figsize = [6,4])
 plt.plot(x_last, u_last.real, label = 'Re(u)')
 plt.plot(x_last, u_last.imag, label = 'Im(u)')
-plt.plot(x_last, -mode_last*(mode_last + 1) + 3*(1 - x_last), label = 'V(x)', linestyle = '--')
+plt.plot(x_last, x_last*(1 - x_last)**2*(mode_last*(mode_last + 1) - 3*(1 - x_last)), label = 'V(x)', linestyle = '--')
 plt.xlabel('x', fontsize = 18)
 plt.ylabel('u(x)', fontsize = 18)
 plt.legend(loc = 'best')
