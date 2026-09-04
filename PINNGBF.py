@@ -17,7 +17,6 @@ plt.rcParams.update({
     "text.usetex": False
 })
 
-
 parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
 parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
 parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
@@ -37,9 +36,11 @@ base_path = f'./GBFData/l{mode}/omega{omega}'
 
 out_dir = os.path.join(base_path, 'NNOutput')
 loss_dir = os.path.join(base_path, 'Loss')
+flux_dir = os.path.join(base_path, 'Flux')
 os.makedirs(base_path, exist_ok=True)
 os.makedirs(out_dir, exist_ok = True)
 os.makedirs(loss_dir, exist_ok = True)
+os.makedirs(flux_dir, exist_ok = True)
 
 # mode = 2
 # omega = 0.3
@@ -216,24 +217,27 @@ def compute_loss(model, x_tensor, mass, mode, omega):
     det_du_re, det_du_im = du_re.detach(), du_im.detach()
     det_u_re, det_u_im = u_re.detach(), u_im.detach()
 
-    normalise = A_**2*(det_d2u_re**2 + det_d2u_im**2) + (B_re**2 + B_im**2)*(det_du_re**2 + det_du_im**2) + C_**2*(det_u_re**2 + det_u_im**2)
+    # normalise = A_**2*(det_d2u_re**2 + det_d2u_im**2) + (B_re**2 + B_im**2)*(det_du_re**2 + det_du_im**2) + C_**2*(det_u_re**2 + det_u_im**2)
 
     
-    loss_ode_re = t.mean(res_ode_re**2/(normalise + epsilon))
-    loss_ode_im = t.mean(res_ode_im**2/(normalise + epsilon))
+    # loss_ode_re = t.mean(res_ode_re**2/(normalise + epsilon))
+    # loss_ode_im = t.mean(res_ode_im**2/(normalise + epsilon))
+    loss_ode_re = t.mean(res_ode_re**2)
+    loss_ode_im = t.mean(res_ode_im**2)
     loss_ode = loss_ode_re + loss_ode_im
 
     #Flux conservation
     J = g(x_tensor, mass)*(u_re*du_im - u_im*du_re) - omega*(u_re**2 + u_im**2 - 1)
-    det_scale = (omega*(det_u_re**2 + det_u_im**2 + 1.0))**2
-    loss_flux = t.mean(J**2/(det_scale + epsilon))
+    # det_scale = (omega*(det_u_re**2 + det_u_im**2 + 1.0))**2
+    # loss_flux = t.mean(J**2/(det_scale + epsilon))
+    loss_flux = t.mean(J**2)
 
     total_loss = loss_ode + loss_flux
 
     # #Wronskian/Probability flux conservation loss
     # loss_wronskian = (1 - (1 + model.beta_re**2 + model.beta_im**2)/(model.alpha_re**2 + model.alpha_im**2 + 1e-8))**2
 
-    return u_re, u_im, total_loss, loss_flux, loss_ode, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im
+    return u_re, u_im, J, total_loss, loss_flux, loss_ode, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im
 
 def extraction(model, x_extraction, M, l, om):
 
@@ -320,7 +324,7 @@ for epoch in range(Adam_iterations):
     #                                         model.beta_re, model.beta_im], 'lr': 1e-4})
 
     # loss_weights = annealing(epoch, Adam_iterations)
-    Re_u_nn, Im_u_nn, loss, loss_f, loss_o, loss_ode_real, loss_ode_imag, res_ode_re, res_ode_im = compute_loss(model, x_tensor, mass, mode, omega)
+    Re_u_nn, Im_u_nn, flux_res, loss, loss_f, loss_o, loss_ode_real, loss_ode_imag, res_ode_re, res_ode_im = compute_loss(model, x_tensor, mass, mode, omega)
 
     loss.backward()
     optimiser.step()
@@ -363,6 +367,7 @@ for epoch in range(Adam_iterations):
         res_im_plot = res_ode_im.cpu().detach().numpy().flatten()
         u_re_plot = Re_u_nn.cpu().detach().numpy().flatten()
         u_im_plot = Im_u_nn.cpu().detach().numpy().flatten()
+        flux_plot = flux_res.cpu().detach().numpy().flatten()
 
         plt.figure()
         plt.plot(x_np[idx], res_re_plot[idx], color = 'blue', label = r'$\Re (Res_{ODE})$')
@@ -392,6 +397,18 @@ for epoch in range(Adam_iterations):
         plt.savefig(f'{loss_dir}/Loss_Epoch_{epoch + 1}.png', format = 'png')
         plt.close()
 
+        plt.figure()
+        plt.plot(x_np[idx], flux_plot[idx], color = 'purple', label = 'Flux Residual')
+        plt.axhline(0.0, color = 'cyan', linestyle = '--', label = 'Target')
+        plt.xlabel('x', fontsize = 25)
+        plt.ylabel(r'Flux Residual', fontsize = 25)
+        plt.yscale('symlog')
+        plt.grid()
+        plt.legend(fontsize = 15, loc = 'best')
+        plt.tight_layout()
+        plt.savefig(f'{flux_dir}/Flux_Residual_Epoch_{epoch + 1}.png', format = 'png')
+        plt.close()
+
 print("Adam training complete. Switching to L-BFGS:")
 
 
@@ -419,7 +436,7 @@ for epoch in range(lbfgs_iterations):
     def closure():
         lbfgs_optimiser.zero_grad()
 
-        Re_u_nn, Im_u_nn, loss, loss_f, loss_o, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im = compute_loss(model, x_tensor_lbfgs, mass, mode, omega)       
+        Re_u_nn, Im_u_nn, flux_res, loss, loss_f, loss_o, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im = compute_loss(model, x_tensor_lbfgs, mass, mode, omega)       
         loss.backward()
 
         info.update({'total': loss.item(), 'flux': loss_f.item(), 'ode': loss_o.item(), 'loss_re': loss_ode_re.item(), 'loss_im': loss_ode_im.item()})
@@ -427,6 +444,7 @@ for epoch in range(lbfgs_iterations):
         plot_data['x'] = x_tensor_lbfgs.cpu().detach().numpy()
         plot_data['re_w'] = Re_u_nn.cpu().detach().numpy()
         plot_data['im_w'] = Im_u_nn.cpu().detach().numpy()
+        plot_data['flux'] = flux_res.cpu().detach().numpy()
         plot_data['res_re'] = res_ode_re.cpu().detach().numpy()
         plot_data['res_im'] = res_ode_im.cpu().detach().numpy()
 
@@ -492,6 +510,18 @@ for epoch in range(lbfgs_iterations):
         plt.grid()
         plt.tight_layout()
         plt.savefig(f'{loss_dir}/Loss_Epoch_{epoch + 1 + Adam_iterations}.png', format = 'png')
+        plt.close()
+
+        plt.figure()
+        plt.plot(x_plot[idx], plot_data['flux'].flatten()[idx], color = 'purple', label = 'Flux Residual')
+        plt.axhline(0.0, color = 'cyan', linestyle = '--', label = 'Target')
+        plt.xlabel('x', fontsize = 25)
+        plt.ylabel(r'Flux Residual', fontsize = 25)
+        plt.yscale('symlog')
+        plt.grid()
+        plt.legend(fontsize = 15, loc = 'best')
+        plt.tight_layout()
+        plt.savefig(f'{flux_dir}/Flux_Residual_Epoch_{epoch + 1 + Adam_iterations}.png', format = 'png')
         plt.close()
 
 alphas = np.array(alphas)
