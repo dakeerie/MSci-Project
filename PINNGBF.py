@@ -20,6 +20,7 @@ plt.rcParams.update({
 parser = argparse.ArgumentParser(description = "Train PINN for specific mode l")
 parser.add_argument('--mode', type = int, required = True, help = 'The value of l (mode)')
 parser.add_argument('--omega', type = float, required = True, help = 'Incident wave frequency')
+parser.add_argument('--check', action = 'store_true', help = 'Run a quick sanity check and exit without training')
 
 args = parser.parse_args()
 mode = args.mode
@@ -51,8 +52,8 @@ rstar_max = r_to_rstar(x_to_r(x_max, mass), mass)
 rstar_max_tensor = t.tensor(rstar_max, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1)
 
 #Useful quantities
-O = 4*mass*omega
-L = mode*(mode + 1)
+# O = 4*mass*omega
+# L = mode*(mode + 1)
 
 #PINN architecture
 # class cornell_adaptive_tanh(nn.Module):
@@ -129,7 +130,7 @@ def first_grad(y, x):
     return dy
 
 def eval_grad(y, x):
-    return t.autograd.grad(y, x, t.ones_like(y), create_graph=False)[0]
+    return t.autograd.grad(y, x, t.ones_like(y), create_graph=False, retain_graph = True)[0]
 
 #ODE Coefficients
 def A(x):
@@ -149,12 +150,14 @@ def g(x, M):
     return x*(1 - x)**2/(2*M)
 
 #Coefficients obtained via Taylor expansion of u_1 at x = 0 (regular singular point)
-def taylor_coeffs(Lambda, Omega):
+def taylor_coeffs(mass, omega, mode):
+    Lambda = mode*(mode + 1)
+    Omega = 4*mass*omega
     c1 = (Lambda - 3)/(1 - 1j*Omega)
     c2 = ((Lambda + 1)*c1 + 3)/(4 - 1j*2*Omega)
     return c1.real, c1.imag, c2.real, c2.imag
 
-c1_re, c1_im, c2_re, c2_im = taylor_coeffs(L, O)
+c1_re, c1_im, c2_re, c2_im = taylor_coeffs(mass, omega, mode)
 # def annealing(epoch, total_epochs):
 #     if epoch <= 0.1*total_epochs:
 #         BC = 100.0
@@ -189,8 +192,8 @@ def ansatz(model, x_tensor, mass, omega):
     rstar = 2*mass/(1 - x_safe) + 2*mass*t.log(x_safe/(1 - x_safe))
     cs, sn = t.cos(2*omega*rstar), t.sin(2*omega*rstar)
 
-    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + x_tensor**3*(P_re + Q_re*cs - Q_im*sn)
-    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + x_tensor**3*(P_im + Q_im*cs + Q_re*sn)
+    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + 100.0*x_tensor**3*(P_re + Q_re*cs - Q_im*sn)
+    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + 100.0*x_tensor**3*(P_im + Q_im*cs + Q_re*sn)
     return u_re, u_im, P_re, P_im, Q_re, Q_im
 
 def compute_loss(model, x_tensor, mass, mode, omega):
@@ -238,13 +241,12 @@ def compute_loss(model, x_tensor, mass, mode, omega):
 
     return u_re, u_im, J, total_loss, loss_flux, loss_ode, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im
 
-def extraction(model, x_extraction, M, l, om):
+def extraction(model, x_extraction, mass, mode, omega):
 
-    L = l*(l + 1)
-    Omega = 4*M*om
+    L = mode*(mode + 1)
+    Omega = 4*mass*omega
     
     x_extraction_tensor = t.tensor(x_extraction, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1) 
-    rstar_extraction = r_to_rstar(x_to_r(x_extraction, M), M)
 
     u_max_re, u_max_im, *_ = ansatz(model, x_extraction_tensor, mass, omega)
 
@@ -258,6 +260,7 @@ def extraction(model, x_extraction, M, l, om):
     a2 = -(3 + (2 - L)*a1)/(1j*2*Omega)
 
     y_extraction = 1 - x_extraction
+    rstar_extraction = 2*mass/y_extraction + 2*mass*np.log(x_extraction/y_extraction)
     u1 = 1 + a1*y_extraction + a2*y_extraction**2
     du1 = -(a1 + 2*a2*y_extraction)
 
@@ -265,7 +268,7 @@ def extraction(model, x_extraction, M, l, om):
     numerator = u_max - du_max/D
     denominator = u1 - du1/D
     alpha = numerator/denominator
-    beta = (u_max - alpha*u1)/(np.exp(1j*2*om*rstar_extraction)*np.conj(u1))
+    beta = (u_max - alpha*u1)/(np.exp(1j*2*omega*rstar_extraction)*np.conj(u1))
         
     prob = np.abs(alpha)**2 - np.abs(beta)**2
     gbf = 1/np.abs(alpha)**2
@@ -294,8 +297,74 @@ adam_parameters = model.parameters()
 
 optimiser = optim.Adam(adam_parameters, lr = learning_rate)
 
-#Define sampling distribution once
+if args.check:
+    print('\n' + '='*60)
+    print('Running preliminary test:')
+    print('='*60)
 
+    print('\n Ansatz finite everywhere?')
+    xs = t.tensor([[1e-10], [1e-6], [1e-3], [0.5], [x_max]], dtype = DTYPE, device = device, requires_grad = True)
+    u_re, u_im, P_re, P_im, Q_re, Q_im = ansatz(model, xs, mass, omega)
+    print(f"{'x':>12}{'u_re':>16}{'u_im':>16}")
+    for i, xv in enumerate(xs.flatten().tolist()):
+        print(f"{xv:>12.1e}{u_re[i, 0].item():>16.8f}{u_im[i, 0].item():>16.8f}")
+    assert t.isfinite(u_re).all() and t.isfinite(u_im).all(), 'Ansatz gave non-finite u'
+
+    print('\n Horizon constraint check:')
+    for h in (1e-5, 1e-6, 1e-7):
+        xh = t.tensor([[h]], dtype = DTYPE, device = device)
+        a, b, *_ = ansatz(model, xh, mass, omega)
+        print(f"    eps = {h:.0e}: (u_re - 1)/eps = {(a.item() - 1)/h:>12.6f}"
+              f"                             u_im/eps = {b.item()/h:>12.6f}")
+    print(f"    target c1 = {c1_re:>12.6f}                                                                    {c1_im:>12.6f}")
+
+    print("\n Autograd chain check via finite difference:")
+    x0, dh = 0.5, 1e-6
+    xg = t.tensor([[x0]], dtype = DTYPE, device = device, requires_grad = True)
+    ur, ui, *_ = ansatz(model, xg, mass, omega)
+    dur, _ = grads(ur, xg); dui, _ = grads(ui, xg)
+    with t.no_grad():
+        xp = t.tensor([[x0 + dh]], dtype = DTYPE, device = device)
+        xm = t.tensor([[x0 - dh]], dtype = DTYPE, device = device)
+        up_re, up_im, *_ = ansatz(model, xp, mass, omega)
+        um_re, um_im, *_ = ansatz(model, xm, mass, omega)
+    fd_re = (up_re.item() - um_re.item())/(2*dh)
+    fd_im = (up_im.item() - um_im.item())/(2*dh)
+    print(f'     du/dx at x = {x0}: autograd {dur.item():>12.6f} {dui.item():>12.6f}')
+    print(f'                        finite diff {fd_re:>12.6f} {fd_im:>12.6f}')
+
+    print("\n Extraction returns finite complex scalars?")
+    al, be, pr, gb = extraction(model, x_max, mass, mode, omega)
+    print(f" Extration at x_max = {x_max}")
+    print(f"    alpha = {al.real:.6f} + {al.imag:.6f}i, |alpha| = {abs(al):.6f}")
+    print(f"    beta = {be.real:.6f} + {be.imag:.6f}, |beta| = {abs(be):.6f}")
+    print(f"prob = {pr:.6f}   GBF = {gb:.6e}")
+    assert np.isfinite([al.real, al.imag, be.real, be.imag, pr, gb]).all()
+
+    print("\n Loss is finite and backward runs?")
+    xt = x_max*t.rand((2000, 1), dtype = DTYPE, device = device)
+    xt.requires_grad_(True)
+    _, _, _, loss_c, lf, lo, *_ = compute_loss(model, xt, mass, mode, omega)
+    loss_c.backward()
+    gnorm = sum(p.grad.norm().item()**2 for p in model.parameters() if p.grad is not None)**0.5
+    print(f" loss = {loss_c.item():.6e} (ode {lo.item():.4e}, flux {lf.item():.4e})")
+    print(f' grad norm  = {gnorm:.6e}')
+    assert np.isfinite(loss_c.item()) and gnorm > 0, 'loss or gradient is bad'
+
+    print("\n Five Adam steps:")
+    for k in range(5):
+        optimiser.zero_grad(set_to_none = True)
+        xt = x_max*t.rand((2000, 1), dtype = DTYPE, device = device)
+        xt.requires_grad_(True)
+        _, _, _, l5, *_ = compute_loss(model, xt, mass, mode, omega)
+        l5.backward(); optimiser.step()
+        print(f"Step {k}: loss = {l5.item():.6e}")
+    print("\n" + "="*60)
+    print("Preliminary test passed!")
+    print('='*60)
+    raise SystemExit(0)
+        
+        
 Adam_iterations = 18000
 for epoch in range(Adam_iterations):
     optimiser.zero_grad(set_to_none = True)
