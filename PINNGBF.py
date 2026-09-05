@@ -182,6 +182,17 @@ c1_re, c1_im, c2_re, c2_im = taylor_coeffs(L, O)
     
 #     return [BC, AMPLITUDE, UMAX, UMAX_DERIV, ODE, WRON]
 
+def ansatz(model, x_tensor, mass, omega):
+    NN = model(x_tensor)
+    P_re, P_im, Q_re, Q_im = NN[:, 0:1], NN[:, 1:2], NN[:, 2:3], NN[:, 3:4]
+    x_safe = x_tensor.clamp(min = 1e-12)
+    rstar = 2*mass/(1 - x_safe) + 2*mass*t.log(x_safe/(1 - x_safe))
+    cs, sn = t.cos(2*omega*rstar), t.sin(2*omega*rstar)
+
+    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + x_tensor**3*(P_re + Q_re*cs - Q_im*sn)
+    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + x_tensor**3*(P_im + Q_im*cs + Q_re*sn)
+    return u_re, u_im, P_re, P_im, Q_re, Q_im
+
 def compute_loss(model, x_tensor, mass, mode, omega):
     """weights: [weight_horizon, weight_amplitude, weight_umax, 
     weight_umax_deriv, weight_ODE, weight_wronskian]
@@ -189,16 +200,7 @@ def compute_loss(model, x_tensor, mass, mode, omega):
     u boundary loss, u' boundary loss, ODE loss, Re(ODE loss), Im(ODE loss), wronskian loss"""
 
     #Physics loss
-    NN = model(x_tensor)
-    P_re, P_im, Q_re, Q_im = NN[:, 0:1], NN[:, 1:2], NN[:, 2:3], NN[:, 3:4]
-
-    x_safe = x_tensor.clamp(min = 1e-12)
-    r_of_x = 2*mass/(1 - x_safe)
-    rstar = r_of_x + 2*mass*t.log(r_of_x/(2*mass) - 1)
-    cs, sn = t.cos(2*omega*rstar), t.sin(2*omega*rstar)
-    
-    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + x_tensor**3*(P_re + Q_re*cs - Q_im*sn)
-    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + x_tensor**3*(P_im + Q_re*sn + Q_im*cs)
+    u_re, u_im, *_ = ansatz(model, x_tensor, mass, omega)
     
     du_re, d2u_re = grads(u_re, x_tensor)
     du_im, d2u_im = grads(u_im, x_tensor)
@@ -242,13 +244,10 @@ def extraction(model, x_extraction, M, l, om):
     Omega = 4*M*om
     
     x_extraction_tensor = t.tensor(x_extraction, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1) 
-    NN_max = model(x_extraction_tensor)
-    NN_max_re, NN_max_im = NN_max[:, 0:1], NN_max[:, 1:2]
-
     rstar_extraction = r_to_rstar(x_to_r(x_extraction, M), M)
 
-    u_max_re = 1 + c1_re*x_extraction_tensor + c2_re*x_extraction_tensor**2 + NN_max_re*x_extraction_tensor**3
-    u_max_im = c1_im*x_extraction_tensor + c2_im*x_extraction_tensor**2 + NN_max_im*x_extraction_tensor**3
+    u_max_re, u_max_im, *_ = ansatz(model, x_extraction_tensor, mass, omega)
+
     du_max_re  = eval_grad(u_max_re, x_extraction_tensor)
     du_max_im  = eval_grad(u_max_im, x_extraction_tensor)
 
