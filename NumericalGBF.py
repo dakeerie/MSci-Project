@@ -76,8 +76,8 @@ for mode in modes:
                 y0 = initial_state,
                 method = 'DOP853',
                 args = (mass, mode, om),
-                rtol = 1e-7,
-                atol = 1e-9,
+                rtol = 1e-9,
+                atol = 1e-11,
                 dense_output = True
                 )
 
