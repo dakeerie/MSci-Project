@@ -55,25 +55,52 @@ O = 4*mass*omega
 L = mode*(mode + 1)
 
 #PINN architecture
-class adaptive_tanh(nn.Module):
-    def __init__(self, num_features):
+# class cornell_adaptive_tanh(nn.Module):
+#     def __init__(self, num_features):
+#         super().__init__()
+#         self.beta = nn.Parameter(t.zeros(1, num_features))
+
+#     def forward(self, x):
+#         return (1 + self.beta*x)*t.tanh(x)
+
+# class jagtap_adaptive_tanh(nn.Module):
+#     def __init__(self, num_features, n = 10.0):
+#         super().__init__()
+#         self.a = nn.Parameter(t.ones(1, num_features)/n)
+#         self.n = n
+
+#     def forward(self, x):
+#         return t.tanh(self.n*self.a*x)
+
+# class adaptive_sine(nn.Module):
+#     def __init__(self, num_features)
+#         super().__init__()
+#         self.a = nn.Parameter(t.ones(1, num_features))
+
+#     def forward(self, x):
+#         return t.sin(self.a*x)
+
+class keerie_adaptive_tanh(nn.Module):
+    def __init__(self, num_features, n = 10.0):
         super().__init__()
         self.beta = nn.Parameter(t.zeros(1, num_features))
+        self.a = nn.Parameter(t.ones(1, num_features)/n)
+        self.n = n
 
     def forward(self, x):
-        return (1 + self.beta*x)*t.tanh(x)
+        return (1 + self.beta*x)*t.tanh(self.n*self.a*x)
 
 class Model(nn.Module):
     def __init__(self, in_channels, out_channels, hidden_channels, num_hidden_layers=2):
         super().__init__() 
         self.input_layer = nn.Linear(in_channels, hidden_channels)
-        self.act_input = adaptive_tanh(hidden_channels)
+        self.act_input = keerie_adaptive_tanh(hidden_channels)
 
         self.hidden_layers = nn.ModuleList()
         self.activations = nn.ModuleList()
         for _ in range(num_hidden_layers):
             self.hidden_layers.append(nn.Linear(hidden_channels, hidden_channels))
-            self.activations.append(adaptive_tanh(hidden_channels))
+            self.activations.append(keerie_adaptive_tanh(hidden_channels))
 
         self.output_layer = nn.Linear(hidden_channels, out_channels) 
 
@@ -100,6 +127,9 @@ def grads(y, x):
 def first_grad(y, x):
     dy = t.autograd.grad(y, x, t.ones_like(y), create_graph = True)[0]
     return dy
+
+def eval_grad(y, x):
+    return t.autograd.grad(y, x, t.ones_like(y), create_graph=False)[0]
 
 #ODE Coefficients
 def A(x):
@@ -158,50 +188,17 @@ def compute_loss(model, x_tensor, mass, mode, omega):
     returns: Re(w_nn), Im(w_nn), total loss, horizon loss, amplitude loss, 
     u boundary loss, u' boundary loss, ODE loss, Re(ODE loss), Im(ODE loss), wronskian loss"""
 
-    # #Boundary tensors
-    # x_horizon = t.tensor(0., requires_grad = True, dtype = DTYPE, device = device).view(-1, 1)  
-    # x_max_tensor = t.tensor(x_max, requires_grad = True, dtype = DTYPE, device = device).view(-1, 1) 
-
-
-    # #Horizon Boundary Conditions
-    # u_h = model(x_horizon)
-    # u_h_re, u_h_im = u_h[:, 0:1], u_h[:, 1:2]
-    # du_h_re = first_grad(u_h_re, x_horizon)
-    # du_h_im = first_grad(u_h_im, x_horizon)
-
-    # loss_horizon_re = du_h_re - (L - 3)/(1 + Omega**2)
-    # loss_horizon_im = du_h_im - Omega/(1 + Omega**2)
-    # loss_horizon = t.mean(loss_horizon_re**2 + loss_horizon_im**2)
-
-    # #Normalisation loss
-    # loss_normalisation = t.mean((1.0 - u_h_re)**2 + (0.0 - u_h_im)**2)
-    
-    # #x_max BC loss terms
-    # u_max = model(x_max_tensor)
-    # u_max_re, u_max_im = u_max[:, 0:1], u_max[:, 1:2]
-    # du_max_re = first_grad(u_max_re, x_max_tensor)
-    # du_max_im = first_grad(u_max_im, x_max_tensor)
-
-    # #u boundary term: (u_NN - u_analytical)|_x_max
-    # boundary_real = u_max_re - (model.alpha_re + model.beta_re*t.cos(2*omega*rstar_max_tensor)
-    #                     - model.beta_im*t.sin(2*omega*rstar_max_tensor))
-    # boundary_imag = u_max_im - (model.alpha_im + model.beta_im*t.cos(2*omega*rstar_max_tensor)
-    #                     + model.beta_re*t.sin(2*omega*rstar_max_tensor))
-    # loss_u_max = t.mean(boundary_real**2 + boundary_imag**2)
-
-    # #u derivative boundary term: (u'_NN - u'_analytical)|_x_max
-    # deriv_boundary_real = du_max_re + 2*omega*(model.beta_im*t.cos(2*omega*rstar_max_tensor) 
-    #                                     + model.beta_re*t.sin(2*omega*rstar_max_tensor))/g(x_max, mass)
-    # deriv_boundary_imag = du_max_im - 2*omega*(model.beta_re*t.cos(2*omega*rstar_max_tensor)
-    #                                     - model.beta_im*t.sin(2*omega*rstar_max_tensor))/g(x_max, mass)
-    # loss_deriv_u_max = t.mean(deriv_boundary_real**2 + deriv_boundary_imag**2)
-
     #Physics loss
     NN = model(x_tensor)
-    NN_re, NN_im = NN[:, 0:1], NN[:, 1:2]
+    P_re, P_im, Q_re, Q_im = NN[:, 0:1], NN[:, 1:2], NN[:, 2:3], NN[:, 3:4]
+
+    x_safe = x_tensor.clamp(min = 1e-12)
+    r_of_x = 2*mass/(1 - x_safe)
+    rstar = r_of_x + 2*mass*t.log(r_of_x/(2*mass) - 1)
+    cs, sn = t.cos(2*omega*rstar), t.sin(2*omega*rstar)
     
-    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + 100*NN_re*x_tensor**3
-    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + 100*NN_im*x_tensor**3
+    u_re = 1 + c1_re*x_tensor + c2_re*x_tensor**2 + x_tensor**3*(P_re + Q_re*cs - Q_im*sn)
+    u_im = c1_im*x_tensor + c2_im*x_tensor**2 + x_tensor**3*(P_im + Q_re*sn + Q_im*cs)
     
     du_re, d2u_re = grads(u_re, x_tensor)
     du_im, d2u_im = grads(u_im, x_tensor)
@@ -213,9 +210,9 @@ def compute_loss(model, x_tensor, mass, mode, omega):
     res_ode_re = (A_*d2u_re + B_re*du_re - B_im*du_im + C_*u_re)
     res_ode_im = (A_*d2u_im + B_im*du_re + B_re*du_im + C_*u_im)
 
-    det_d2u_re, det_d2u_im = d2u_re.detach(), d2u_im.detach()
-    det_du_re, det_du_im = du_re.detach(), du_im.detach()
-    det_u_re, det_u_im = u_re.detach(), u_im.detach()
+    # det_d2u_re, det_d2u_im = d2u_re.detach(), d2u_im.detach()
+    # det_du_re, det_du_im = du_re.detach(), du_im.detach()
+    # det_u_re, det_u_im = u_re.detach(), u_im.detach()
 
     # normalise = A_**2*(det_d2u_re**2 + det_d2u_im**2) + (B_re**2 + B_im**2)*(det_du_re**2 + det_du_im**2) + C_**2*(det_u_re**2 + det_u_im**2)
 
@@ -250,10 +247,10 @@ def extraction(model, x_extraction, M, l, om):
 
     rstar_extraction = r_to_rstar(x_to_r(x_extraction, M), M)
 
-    u_max_re = 1 + c1_re*x_extraction_tensor + c2_re*x_extraction_tensor**2 + 100*NN_max_re*x_extraction_tensor**3
-    u_max_im = c1_im*x_extraction_tensor + c2_im*x_extraction_tensor**2 + 100*NN_max_im*x_extraction_tensor**3
-    du_max_re  = first_grad(u_max_re, x_extraction_tensor)
-    du_max_im  = first_grad(u_max_im, x_extraction_tensor)
+    u_max_re = 1 + c1_re*x_extraction_tensor + c2_re*x_extraction_tensor**2 + NN_max_re*x_extraction_tensor**3
+    u_max_im = c1_im*x_extraction_tensor + c2_im*x_extraction_tensor**2 + NN_max_im*x_extraction_tensor**3
+    du_max_re  = eval_grad(u_max_re, x_extraction_tensor)
+    du_max_im  = eval_grad(u_max_im, x_extraction_tensor)
 
     u_max = complex(u_max_re.item(), u_max_im.item())
     du_max = complex(du_max_re.item(), du_max_im.item())
@@ -292,7 +289,7 @@ betas = []
 
 N_points = 10000
 learning_rate = 1e-3
-model = Model(1, 2, 32, num_hidden_layers = 3).to(device = device, dtype = DTYPE)
+model = Model(1, 4, 32, num_hidden_layers = 3).to(device = device, dtype = DTYPE)
 
 adam_parameters = model.parameters()
 
@@ -302,7 +299,7 @@ optimiser = optim.Adam(adam_parameters, lr = learning_rate)
 
 Adam_iterations = 18000
 for epoch in range(Adam_iterations):
-    optimiser.zero_grad()
+    optimiser.zero_grad(set_to_none = True)
     N_uniform = int(0.6*N_points)
     x_uniform = x_max*t.rand((N_uniform, 1), dtype = DTYPE, device = device)
 
@@ -314,25 +311,11 @@ for epoch in range(Adam_iterations):
     x_tensor = t.cat([x_uniform, x_edges], dim = 0)
     x_tensor.requires_grad_(True)
 
-    # if epoch == int(0.1*Adam_iterations):
-    #     print("Unfreezing coefficients...")
-    #     model.alpha_re.requires_grad = True
-    #     model.alpha_im.requires_grad = True
-    #     model.beta_re.requires_grad = True
-    #     model.beta_im.requires_grad = True
-    #     optimiser.add_param_group({'params': [model.alpha_re, model.alpha_im, 
-    #                                         model.beta_re, model.beta_im], 'lr': 1e-4})
-
     # loss_weights = annealing(epoch, Adam_iterations)
     Re_u_nn, Im_u_nn, flux_res, loss, loss_f, loss_o, loss_ode_real, loss_ode_imag, res_ode_re, res_ode_im = compute_loss(model, x_tensor, mass, mode, omega)
 
     loss.backward()
     optimiser.step()
-
-    # alpha_real_array.append(model.alpha_re.item())
-    # alpha_imag_array.append(model.alpha_im.item())
-    # beta_real_array.append(model.beta_re.item())
-    # beta_imag_array.append(model.beta_im.item())
     
     hist_total.append(loss.item())
     hist_flux.append(loss_f.item())
@@ -417,7 +400,7 @@ lbfgs_optimiser = t.optim.LBFGS(model.parameters(), lr = 1.0, max_iter = 20,
 
 lbfgs_iterations = 1000
 # lbfgs_weights = annealing(Adam_iterations, Adam_iterations)
-
+N_points = 2*N_points
 N_uniform = int(0.6*N_points)
 x_uniform = x_max*t.rand((N_uniform, 1), dtype = DTYPE, device = device)
 
@@ -434,7 +417,7 @@ for epoch in range(lbfgs_iterations):
     plot_data = {}
 
     def closure():
-        lbfgs_optimiser.zero_grad()
+        lbfgs_optimiser.zero_grad(set_to_none = True)
 
         Re_u_nn, Im_u_nn, flux_res, loss, loss_f, loss_o, loss_ode_re, loss_ode_im, res_ode_re, res_ode_im = compute_loss(model, x_tensor_lbfgs, mass, mode, omega)       
         loss.backward()
@@ -564,8 +547,8 @@ ax1.set_yscale('log')
 ax1.set_xlabel('Extraction number (~epoch/100)', fontsize = 14)
 ax1.set_ylabel(r'$\Gamma$', fontsize = 16)
 ax1.tick_params(axis = 'y')
-ax1.axhline(7.0011982e-05, color = 'blue', linestyle = ':', linewidth = 1,
-            label = r'$\Gamma_{\rm ref}$')
+# ax1.axhline(7.0011982e-05, color = 'blue', linestyle = ':', linewidth = 1,
+#             label = r'$\Gamma_{\rm ref}$')
 ax1.grid(alpha = 0.3)
 
 ax2 = ax1.twinx()
@@ -573,12 +556,11 @@ ax2.plot(extraction_epochs, probability, color = 'red',
          label = r'$|\alpha|^2 - |\beta|^2$')
 ax2.set_ylabel(r'$|\alpha|^2 - |\beta|^2$', fontsize = 16)
 ax2.tick_params(axis = 'y')
-ax2.axhline(1.0, color = 'red', linestyle = ':', linewidth = 1)
+ax2.axhline(1.0, color = 'red', linestyle = ':', linewidth = 1, label = r'Target $|\alpha|^2 - |\beta|^2$')
 
 lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
 ax1.legend(lines1 + lines2, labels1 + labels2, fontsize = 11, loc = 'best')
-
 plt.title(f'l = {mode}, omega = {omega}', fontsize = 16)
 plt.tight_layout()
 plt.savefig(f'{base_path}/GBFProb.png', format = 'png')
