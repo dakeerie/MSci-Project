@@ -30,7 +30,8 @@ DTYPE = t.float64
 NP_DTYPE = np.float32 if DTYPE == t.float32 else np.float64
 
 device = t.device('cuda' if t.cuda.is_available() else 'cpu')
-print(f"Using device: {device}")
+t.set_num_threads(4)
+print(f"Using device: {device}", flush = True)
 
 #Save utilities
 base_path = f'./GBFData/l{mode}/omega{omega}'
@@ -275,9 +276,9 @@ def extraction(model, x_extraction, mass, mode, omega):
 
     return alpha, beta, prob, gbf
 
-print('-'*30)
-print(f'Starting training for l = {mode} with omega = {omega}')
-print('-'*30)
+print('-'*30, flush = True)
+print(f'Starting training for l = {mode} with omega = {omega}', flush = True)
+print('-'*30, flush = True)
 
 hist_total = []
 hist_flux = []
@@ -288,9 +289,11 @@ GBF = []
 probability = []
 alphas = []
 betas = []
+extraction_epochs = []
 
 N_points = 10000
 learning_rate = 1e-3
+t.manual_seed(0)
 model = Model(1, 4, 32, num_hidden_layers = 3).to(device = device, dtype = DTYPE)
 
 adam_parameters = model.parameters()
@@ -298,27 +301,27 @@ adam_parameters = model.parameters()
 optimiser = optim.Adam(adam_parameters, lr = learning_rate)
 
 if args.check:
-    print('\n' + '='*60)
-    print('Running preliminary test:')
-    print('='*60)
+    print('\n' + '='*60, flush = True)
+    print('Running preliminary test:', flush = True)
+    print('='*60, flush = True)
 
-    print('\n Ansatz finite everywhere?')
+    print('\n Ansatz finite everywhere?', flush = True)
     xs = t.tensor([[1e-10], [1e-6], [1e-3], [0.5], [x_max]], dtype = DTYPE, device = device, requires_grad = True)
     u_re, u_im, P_re, P_im, Q_re, Q_im = ansatz(model, xs, mass, omega)
-    print(f"{'x':>12}{'u_re':>16}{'u_im':>16}")
+    print(f"{'x':>12}{'u_re':>16}{'u_im':>16}", flush = True)
     for i, xv in enumerate(xs.flatten().tolist()):
-        print(f"{xv:>12.1e}{u_re[i, 0].item():>16.8f}{u_im[i, 0].item():>16.8f}")
+        print(f"{xv:>12.1e}{u_re[i, 0].item():>16.8f}{u_im[i, 0].item():>16.8f}", flush = True)
     assert t.isfinite(u_re).all() and t.isfinite(u_im).all(), 'Ansatz gave non-finite u'
 
-    print('\n Horizon constraint check:')
+    print('\n Horizon constraint check:', flush = True)
     for h in (1e-5, 1e-6, 1e-7):
         xh = t.tensor([[h]], dtype = DTYPE, device = device)
         a, b, *_ = ansatz(model, xh, mass, omega)
         print(f"    eps = {h:.0e}: (u_re - 1)/eps = {(a.item() - 1)/h:>12.6f}"
-              f"                             u_im/eps = {b.item()/h:>12.6f}")
-    print(f"    target c1 = {c1_re:>12.6f}                                                                    {c1_im:>12.6f}")
+              f"                             u_im/eps = {b.item()/h:>12.6f}", flush = True)
+    print(f"    target c1 = {c1_re:>12.6f}                                                                    {c1_im:>12.6f}", flush = True)
 
-    print("\n Autograd chain check via finite difference:")
+    print("\n Autograd chain check via finite difference:", flush = True)
     x0, dh = 0.5, 1e-6
     xg = t.tensor([[x0]], dtype = DTYPE, device = device, requires_grad = True)
     ur, ui, *_ = ansatz(model, xg, mass, omega)
@@ -330,38 +333,38 @@ if args.check:
         um_re, um_im, *_ = ansatz(model, xm, mass, omega)
     fd_re = (up_re.item() - um_re.item())/(2*dh)
     fd_im = (up_im.item() - um_im.item())/(2*dh)
-    print(f'     du/dx at x = {x0}: autograd {dur.item():>12.6f} {dui.item():>12.6f}')
-    print(f'                        finite diff {fd_re:>12.6f} {fd_im:>12.6f}')
+    print(f'     du/dx at x = {x0}: autograd {dur.item():>12.6f} {dui.item():>12.6f}', flush = True)
+    print(f'                        finite diff {fd_re:>12.6f} {fd_im:>12.6f}', flush = True)
 
-    print("\n Extraction returns finite complex scalars?")
+    print("\n Extraction returns finite complex scalars?", flush = True)
     al, be, pr, gb = extraction(model, x_max, mass, mode, omega)
-    print(f" Extration at x_max = {x_max}")
-    print(f"    alpha = {al.real:.6f} + {al.imag:.6f}i, |alpha| = {abs(al):.6f}")
-    print(f"    beta = {be.real:.6f} + {be.imag:.6f}, |beta| = {abs(be):.6f}")
-    print(f"prob = {pr:.6f}   GBF = {gb:.6e}")
+    print(f" Extration at x_max = {x_max}", flush = True)
+    print(f"    alpha = {al.real:.6f} + {al.imag:.6f}i, |alpha| = {abs(al):.6f}", flush = True)
+    print(f"    beta = {be.real:.6f} + {be.imag:.6f}, |beta| = {abs(be):.6f}", flush = True)
+    print(f"prob = {pr:.6f}   GBF = {gb:.6e}", flush = True)
     assert np.isfinite([al.real, al.imag, be.real, be.imag, pr, gb]).all()
 
-    print("\n Loss is finite and backward runs?")
+    print("\n Loss is finite and backward runs?", flush = True)
     xt = x_max*t.rand((2000, 1), dtype = DTYPE, device = device)
     xt.requires_grad_(True)
     _, _, _, loss_c, lf, lo, *_ = compute_loss(model, xt, mass, mode, omega)
     loss_c.backward()
     gnorm = sum(p.grad.norm().item()**2 for p in model.parameters() if p.grad is not None)**0.5
-    print(f" loss = {loss_c.item():.6e} (ode {lo.item():.4e}, flux {lf.item():.4e})")
-    print(f' grad norm  = {gnorm:.6e}')
+    print(f" loss = {loss_c.item():.6e} (ode {lo.item():.4e}, flux {lf.item():.4e})", flush = True)
+    print(f' grad norm  = {gnorm:.6e}', flush = True)
     assert np.isfinite(loss_c.item()) and gnorm > 0, 'loss or gradient is bad'
 
-    print("\n Five Adam steps:")
+    print("\n Five Adam steps:", flush = True)
     for k in range(5):
         optimiser.zero_grad(set_to_none = True)
         xt = x_max*t.rand((2000, 1), dtype = DTYPE, device = device)
         xt.requires_grad_(True)
         _, _, _, l5, *_ = compute_loss(model, xt, mass, mode, omega)
         l5.backward(); optimiser.step()
-        print(f"Step {k}: loss = {l5.item():.6e}")
-    print("\n" + "="*60)
-    print("Preliminary test passed!")
-    print('='*60)
+        print(f"Step {k}: loss = {l5.item():.6e}", flush = True)
+    print("\n" + "="*60, flush = True)
+    print("Preliminary test passed!", flush = True)
+    print('='*60, flush = True)
     raise SystemExit(0)
         
         
@@ -392,6 +395,7 @@ for epoch in range(Adam_iterations):
     hist_ode_im.append(loss_ode_imag.item())
 
     if (epoch + 1) % 100 == 0 or epoch == 0 or epoch == (Adam_iterations - 1):
+        extraction_epochs.append(epoch)
         alpha, beta, prob, gbf = extraction(model, x_max, mass, mode, omega)
         alphas.append(alpha)
         betas.append(beta)
@@ -407,8 +411,8 @@ for epoch in range(Adam_iterations):
                     Current value of beta: {beta.real:.5f} + {beta.imag:.5f}i,
                     Current value of |alpha|^2 - |beta|^2: {prob},
                     Current value of GBF: {gbf}.
-                    """)
-            print("-"*30)
+                    """, flush = True)
+            print("-"*30, flush = True)
 
     if (epoch + 1) % 1000 == 0:
         x_np = x_tensor.cpu().detach().numpy().flatten()
@@ -460,15 +464,20 @@ for epoch in range(Adam_iterations):
         plt.savefig(f'{flux_dir}/Flux_Residual_Epoch_{epoch + 1}.png', format = 'png')
         plt.close()
 
-print("Adam training complete. Switching to L-BFGS:")
+
+        t.save({'model_state_dict': model.state_dict(), 'epoch': epoch,
+                    'GBF': GBF, 'probability': probability},
+        os.path.join(base_path, 'checkpoint_latest.pth'))
+
+print("Adam training complete. Switching to L-BFGS:", flush = True)
 
 
-lbfgs_optimiser = t.optim.LBFGS(model.parameters(), lr = 1.0, max_iter = 20,
+lbfgs_optimiser = t.optim.LBFGS(model.parameters(), lr = 1.0, max_iter = 5,
             history_size = 50, line_search_fn = 'strong_wolfe')
 
-lbfgs_iterations = 1000
+lbfgs_iterations = 200
 # lbfgs_weights = annealing(Adam_iterations, Adam_iterations)
-N_points = 2*N_points
+# N_points = 2*N_points
 N_uniform = int(0.6*N_points)
 x_uniform = x_max*t.rand((N_uniform, 1), dtype = DTYPE, device = device)
 
@@ -506,14 +515,19 @@ for epoch in range(lbfgs_iterations):
     # loss_h.append(info['h'])
     # loss_norm.append(info['norm'])
     # loss_ODE.append(info['ode'])
+    if not np.isfinite(info['total']):
+        print(f"L-BFGS diverged at epoch {epoch}; stopping.", flush=True)
+        break
+    
     hist_total.append(info['total'])
     hist_flux.append(info['flux'])
     hist_ode.append(info['ode'])
     hist_ode_re.append(info['loss_re'])
     hist_ode_im.append(info['loss_im'])
 
-    if (epoch + 1) % 100 == 0 or epoch == (lbfgs_iterations - 1):
-        
+    if (epoch + 1) % 20 == 0 or epoch == (lbfgs_iterations - 1):
+
+        extraction_epochs.append(epoch + Adam_iterations)
         alpha, beta, prob, gbf = extraction(model, x_max, mass, mode, omega)
         alphas.append(alpha)
         betas.append(beta)
@@ -529,8 +543,8 @@ for epoch in range(lbfgs_iterations):
                     Current value of beta: {beta.real:.5f} + {beta.imag:.5f}i,
                     Current value of |alpha|^2 - |beta|^2: {prob},
                     Current value of GBF: {gbf}.
-                    """)
-        print("-"*30)
+                    """, flush = True)
+        print("-"*30, flush = True)
         
         x_plot = plot_data['x'].flatten()
         idx = np.argsort(x_plot)
@@ -606,13 +620,11 @@ plt.legend()
 plt.savefig(f'{base_path}/beta_convergence.png', format = 'png')
 plt.close()
 
-extraction_epochs = np.arange(len(GBF))*100
-
 fig, ax1 = plt.subplots(figsize = [7, 4.5])
 
 ax1.plot(extraction_epochs, GBF, color = 'blue', label = r'$\Gamma$')
 ax1.set_yscale('log')
-ax1.set_xlabel('Extraction number (~epoch/100)', fontsize = 14)
+ax1.set_xlabel('Epoch', fontsize = 14)
 ax1.set_ylabel(r'$\Gamma$', fontsize = 16)
 ax1.tick_params(axis = 'y')
 # ax1.axhline(7.0011982e-05, color = 'blue', linestyle = ':', linewidth = 1,
@@ -666,8 +678,8 @@ with open(result_file_path, 'w') as f:
     f.write(f"GBF = {final_gbf:.10e}\n")
 
 
-print(f'Training complete. Checkpoint saved to {checkpoint_path}')
-print(f"l = {mode} mode with omega = {omega} completed successfully.")
+print(f'Training complete. Checkpoint saved to {checkpoint_path}', flush = True)
+print(f"l = {mode} mode with omega = {omega} completed successfully.", flush = True)
 print(f"""Final values:
                     Total scaled loss: {info['total']:.4e},
                     Flux loss: {info['flux']:.4e},
@@ -682,4 +694,4 @@ print(f"""Final values:
                     Final value of |R|^2: {np.abs(R)**2:.5f},
                     Final value of |T|^2 + |R|^2: {(np.abs(R)**2 + np.abs(T)**2):.5f}.
                     The grey body factor for l = {mode}, omega = {omega} is {np.abs(T)**2:.5f}
-                    """)
+                    """, flush = True)
